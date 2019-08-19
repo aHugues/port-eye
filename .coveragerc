@@ -1,5 +1,5 @@
 [run]
-source=port-eye
+source=port_eye
 
 [report]
 ignore_errors = True
