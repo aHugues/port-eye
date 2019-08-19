@@ -7,6 +7,9 @@ python:
   - "3.6"
   - "3.7"
 
+before_install:
+  - pip install .
+
 script: 
   - pytest --cov
-  - python port-eye
+  - port-eye
