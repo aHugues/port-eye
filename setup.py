@@ -1,8 +1,16 @@
+import sys
 from setuptools import find_packages, setup
-from pathlib import Path
 
-with open(str(Path(".") / "README.md"), "r", encoding="utf-8") as f:
-    README = f.read()
+# Solve compatibility issue with Python 2
+if sys.version_info[0] == 2:
+    from os import path
+    with open(path.join(".", "README.md"), "r") as f:
+        README = f.read().decode("string_escape")
+
+else:
+    from pathlib import Path
+    with open(str(Path(".") / "README.md"), "r", encoding="utf-8") as f:
+        README = f.read()
 
 setup(
     name="port-eye",
