@@ -13,3 +13,5 @@ before_install:
 script: 
   - pytest --cov
   - port-eye
+
+after_success: codecov
