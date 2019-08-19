@@ -1,10 +1,11 @@
 [run]
 source=port_eye
+omit = 
+    Coverage.py
 
 [report]
 ignore_errors = True
 exclude_lines =
     pragma: no cover
     raise NotImplementedError
-    if __name__ == .__main__.:
-    if typing.TYPE_CHECKING:
+    if __name__ == '__main__':
