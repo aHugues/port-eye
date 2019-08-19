@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 from pathlib import Path
 
 with open(str(Path(".") / "README.md"), "r", encoding="utf-8") as f:
@@ -14,6 +14,7 @@ setup(
     long_description_content_type="text/markdown",
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
+    packages=find_packages(exclude=["tests*"]),
     extras_require={
         "dev": [
             "pytest",
@@ -22,5 +23,6 @@ setup(
             "black",
             "pylint",
         ]
-    }
+    },
+    entry_points={"console_scripts": ["port-eye=port_eye.main:main"]},
 )

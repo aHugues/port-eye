@@ -9,3 +9,4 @@ python:
 
 script: 
   - pytest --cov
+  - python port-eye
