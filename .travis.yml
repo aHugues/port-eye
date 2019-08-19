@@ -10,8 +10,12 @@ python:
 before_install:
   - pip install .
 
+install:
+  - pip install ".[test]"
+
 script: 
   - pytest --cov
   - port-eye
 
-after_success: codecov
+after_success: 
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then codecov; fi
