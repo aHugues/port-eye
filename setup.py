@@ -15,18 +15,10 @@ setup(
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
     packages=find_packages(exclude=["tests*"]),
-    extras_require={
-        "dev": [
-            "pytest",
-            "pytest-cov",
-            "codecov",
-            "black",
-            "pylint",
-        ]
-    },
+    extras_require={"dev": ["pytest", "pytest-cov", "codecov", "black", "pylint"]},
     python_requires=">=2.7",
     entry_points={"console_scripts": ["port-eye=port_eye.main:main"]},
-       classifiers=[
+    classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
