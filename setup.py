@@ -23,6 +23,9 @@ setup(
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
     packages=find_packages(exclude=["tests*"]),
+    install_requires=[
+        "click>=7",
+    ],
     extras_require={
         "dev": [
             "pytest",
