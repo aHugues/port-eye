@@ -10,6 +10,9 @@ python:
 before_install:
   - pip install .
 
+install:
+  - pip install ".[test]"
+
 script: 
   - pytest --cov
   - port-eye

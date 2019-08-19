@@ -15,7 +15,20 @@ setup(
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
     packages=find_packages(exclude=["tests*"]),
-    extras_require={"dev": ["pytest", "pytest-cov", "codecov", "black", "pylint"]},
+    extras_require={
+        "dev": [
+            "pytest",
+            "pytest-cov",
+            "codecov",
+            "black",
+            "pylint"
+        ],
+        "test": [
+            "pytest",
+            "pytest-cov",
+            "codecov",
+        ]
+        },
     python_requires=">=2.7",
     entry_points={"console_scripts": ["port-eye=port_eye.main:main"]},
     classifiers=[
