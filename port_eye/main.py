@@ -9,7 +9,7 @@ import ipaddress
 def main(ipv4, ipv6, cidr, file):
     parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
     parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
-    print("test")
+    parsed_cidr = [ipaddress.ip_network(address) for address in cidr]
 
 
 if __name__ == "__main__":
