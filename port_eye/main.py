@@ -1,5 +1,5 @@
 import click
-from utils import parse_ipv4_hosts
+import ipaddress
 
 @click.command()
 @click.option('--ipv4', '-h4', multiple=True, type=str, help="IPV4 address of host to check")
@@ -7,7 +7,8 @@ from utils import parse_ipv4_hosts
 @click.option('--cidr', '-c', multiple=True, type=str, help="CIDR block of hosts to check")
 @click.option('--file', '-f', type=click.Path(exists=True), help="File containing the hosts to check")
 def main(ipv4, ipv6, cidr, file):
-    print(parse_ipv4_hosts(ipv4))
+    parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
+    parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
     print("test")
 
 
