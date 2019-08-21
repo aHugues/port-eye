@@ -1,5 +1,7 @@
 import click
 import ipaddress
+from .utils import read_input_file_json
+from .utils import parse_input_file
 
 @click.command()
 @click.option('--ipv4', '-h4', multiple=True, type=str, help="IPV4 address of host to check")
@@ -10,6 +12,17 @@ def main(ipv4, ipv6, cidr, file):
     parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
     parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
     parsed_cidr = [ipaddress.ip_network(address) for address in cidr]
+    
+    if file is not None:
+        file_extension = file.split('.')[-1]
+        if file_extension == 'json':
+            content = read_input_file_json(file)
+        else:
+            print("Not available yet")
+            content = {}
+        parsed_file = parse_input_file(content)
+        print(parsed_file)
+        
 
 
 if __name__ == "__main__":
