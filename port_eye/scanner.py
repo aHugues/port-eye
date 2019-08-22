@@ -14,3 +14,14 @@ class Scanner():
             ipaddress.IPv6Network
         ]:
             raise TypeError("Invalid type for host")
+
+
+    def is_reachable(self):
+        """Check if the target can be reached."""
+        return True
+
+    
+
+    def is_local(self):
+        """Check if the target is in local network."""
+        return self.host.is_private
