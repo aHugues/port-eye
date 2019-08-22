@@ -33,6 +33,7 @@ setup(
     packages=find_packages(exclude=["tests*"]),
     install_requires=version_specific_packages+[
         "click>=7",
+        "python-nmap>=0.6",
     ],
     extras_require={
         "dev": [
