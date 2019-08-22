@@ -1,11 +1,14 @@
 """Class to handle the scan of target hosts."""
 
 import ipaddress
+import nmap
 
 class Scanner():
 
     def __init__(self, host):
-        self.host = host
+        self.raw_host = host
+        self.host = str(host)
+        self.scanner = nmap.PortScanner()
 
         if type(host) not in [
             ipaddress.IPv4Address,
@@ -18,10 +21,11 @@ class Scanner():
 
     def is_reachable(self):
         """Check if the target can be reached."""
-        return True
+        self.scanner.scan(self.host, arguments='-sn --host-timeout 10s')
+        return self.scanner[self.host].state() == 'up'
 
     
 
     def is_local(self):
         """Check if the target is in local network."""
-        return self.host.is_private
+        return self.raw_host.is_private

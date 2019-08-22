@@ -15,7 +15,8 @@ def test_correct_format():
     """Test that the create of a scanner works."""
     host = ipaddress.ip_address(u"192.168.0.1")
     scanner = Scanner(host)
-    assert scanner.host == host
+    assert scanner.raw_host == host
+    assert scanner.host == u"192.168.0.1"
 
 
 def test_detection_private_host():
@@ -34,3 +35,25 @@ def test_detection_private_host():
     assert scanner_public_ipv4.is_local() is False
     assert scanner_private_ipv6.is_local() is True
     assert scanner_public_ipv6.is_local() is False
+
+
+def test_reachable():
+    """Check the detection of reachable hosts."""
+    reachable_hosts = [
+        ipaddress.ip_address(u"127.0.0.1"),
+        ipaddress.ip_address(u"216.58.201.238"),
+        # ipaddress.ip_address(u"2a00:1450:4007:80a::200e")
+    ]
+    unreachable_hosts = [
+        ipaddress.ip_address(u"192.168.42.43")
+    ]
+
+    for host in reachable_hosts:
+        scanner = Scanner(host)
+        print(scanner.is_reachable())
+        assert scanner.is_reachable() is True
+    
+    for host in unreachable_hosts:
+        scanner = Scanner(host)
+        print(scanner.is_reachable())
+        assert scanner.is_reachable() is False
