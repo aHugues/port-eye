@@ -50,10 +50,8 @@ def test_reachable():
 
     for host in reachable_hosts:
         scanner = Scanner(host)
-        print(scanner.is_reachable())
         assert scanner.is_reachable() is True
     
     for host in unreachable_hosts:
         scanner = Scanner(host)
-        print(scanner.is_reachable())
         assert scanner.is_reachable() is False
