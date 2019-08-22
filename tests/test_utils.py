@@ -1,6 +1,7 @@
 """Test functions from the utils module."""
 
 import pytest
+from ipaddress import IPv4Address, IPv6Address, IPv4Network
 
 from port_eye.utils import read_input_file_json
 from port_eye.utils import read_input_file_txt
@@ -38,6 +39,22 @@ def test_parsing_with_error():
         parse_input_file(content)
 
 
-# def test_correct_parsing():
-#     """Test that content are correctly parsed."""
-#     content = read_input_file_json("tests/json_test.json")
+def test_correct_parsing():
+    """Test that content are correctly parsed."""
+    content = read_input_file_json("tests/json_test.json")
+    parsed_content = parse_input_file(content)
+
+    # Test that all content is present
+    assert "ipv4" in parsed_content
+    assert "ipv6" in parsed_content
+    assert "cidr" in parsed_content
+
+    # Test that the elements in dict have the correct format
+    for host in parsed_content["ipv4"]:
+        assert type(host) == IPv4Address
+    for host in parsed_content["ipv6"]:
+        assert type(host) == IPv6Address
+    for network in parsed_content["cidr"]:
+        assert type(network) == IPv4Network
+
+
