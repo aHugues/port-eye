@@ -12,6 +12,14 @@ else:
     with open(str(Path(".") / "README.md"), "r", encoding="utf-8") as f:
         README = f.read()
 
+# Add version specific install packages
+if sys.version_info[0] == 2:
+    version_specific_packages = [
+        "ipaddress>=1.0"
+    ]
+else:
+    version_specific_packages = []
+
 setup(
     name="port-eye",
     version="0.0",
@@ -23,6 +31,9 @@ setup(
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
     packages=find_packages(exclude=["tests*"]),
+    install_requires=version_specific_packages+[
+        "click>=7",
+    ],
     extras_require={
         "dev": [
             "pytest",
