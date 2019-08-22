@@ -26,7 +26,15 @@ from .utils import parse_input_file
     '--file', '-f',
     type=click.Path(exists=True),
     help="File containing the hosts to check")
-def main(ipv4, ipv6, cidr, file):
+@click.option(
+    '--verbose', '-v',
+    is_flag=True,
+    help="Display verbose logging in the terminal",)
+@click.option(
+    '--output', '-o',
+    type=click.Path(exists=False),
+    help="Output HTML file into which the results must be stored")
+def main(ipv4, ipv6, cidr, file, verbose, output):
     """Run the main application from arguments provided in the CLI."""
     parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
     parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
