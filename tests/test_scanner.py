@@ -13,6 +13,6 @@ def test_wrong_format():
 
 def test_correct_format():
     """Test that the create of a scanner works."""
-    host = ipaddress.ip_address("192.168.0.1")
+    host = ipaddress.ip_address(u"192.168.0.1")
     scanner = Scanner(host)
     assert scanner.host == host
