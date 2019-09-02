@@ -22,7 +22,10 @@ class Scanner():
     def is_reachable(self):
         """Check if the target can be reached."""
         self.scanner.scan(self.host, arguments='-sn --host-timeout 10s')
-        return self.scanner[self.host].state() == 'up'
+        try:
+            return self.scanner[self.host].state() == 'up'
+        except KeyError:
+            return False
 
     
 
