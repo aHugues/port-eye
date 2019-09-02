@@ -29,3 +29,6 @@ class Scanner():
     def is_local(self):
         """Check if the target is in local network."""
         return self.raw_host.is_private
+    
+
+    
