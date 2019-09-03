@@ -1,0 +1,44 @@
+body {
+    color: #212121;
+}
+
+.category-title {
+    width: 70%;
+    border-bottom: 1px solid #90A4AE;
+    color: #37474F;
+}
+
+.todo {
+    font-weight: bold;
+    background-color: red;
+}
+
+.temp {
+    font-weight: bold;
+    color: #E91E63;
+}
+
+table {
+    border: 1px solid #B0BEC5;
+}
+
+td {
+    padding: 2px 5px;
+}
+
+.table-vertical-header {
+    padding-right: 60px;
+    font-weight: 500;
+}
+
+.global-table {
+    margin-left: 60px;
+}
+
+/* .global-table-col-l {
+    width: 60%;
+}
+
+.global-table-col-s {
+    width: 40%;
+} */

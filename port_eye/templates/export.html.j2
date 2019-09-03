@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <style>
+        {{ style }}
+    </style>
+</head>
+
+<body>
+
+    <h1>Scanning Report {{ date }}</h1>
+
+    <div>
+        <h3 class="category-title">
+            Global information
+        </h3>
+        <table class="global-table">
+            <tr>
+                <td class="table-vertical-header">
+                    Duration
+                </td>
+                <td class="temp">
+                    {{ duration }}s
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    Tested hosts
+                </td>
+                <td class="temp">
+                    10
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    Online
+                </td>
+                <td class="temp">
+                    5
+                </td>
+            </tr>
+        </table>
+    </div>
+
+       
+    <div>
+        <h3 class="category-title">
+            Machines Summary
+        </h3>
+        <div>42 Machines detected online</div>
+        <div class="todo">
+            LIST OF MACHINES with status (UP/DOWN)
+        </div> 
+    </div>
+
+
+    <div>
+        <div class="todo">
+            Detailed info
+        </div>
+    </div>
+
+
+</body>
+
+
+
+
+
+
+
+
+</html>
