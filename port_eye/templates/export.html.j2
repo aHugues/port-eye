@@ -9,49 +9,34 @@
 
 <body>
 
-    <h1>Scanning Report {{ date }}</h1>
+    <h1 class="report-title">Scanning Report {{ date }}</h1>
 
-    <div>
+    <div class="category-wrapper">
         <h3 class="category-title">
             Global information
         </h3>
         <table class="global-table">
             <tr>
-                <td class="table-vertical-header">
-                    Duration
-                </td>
-                <td class="temp">
-                    {{ duration }}s
-                </td>
+                <th class="global-table-header">Duration</th>
+                <th class="global-table-header">Tested hosts</th>
+                <th class="global-table-header">Online</th>
             </tr>
-
             <tr>
-                <td>
-                    Tested hosts
-                </td>
-                <td class="temp">
-                    10
-                </td>
-            </tr>
-
-            <tr>
-                <td>
-                    Online
-                </td>
-                <td class="temp">
-                    5
-                </td>
+                <td class="global-table-content">13s</td>
+                <td class="global-table-content">42</td>
+                <td class="global-table-content">12</td>
             </tr>
         </table>
     </div>
 
        
-    <div>
+    <div class="category-wrapper">
         <h3 class="category-title">
             Machines Summary
         </h3>
 
-        <div><span class="temp">42</span> Machines detected online</div>
+        <div class="hosts-count"><span class="temp">42</span> Machines detected online</div>
+
         <table class="status-table">
             <tr>
                 <th>Host</th>
@@ -77,70 +62,134 @@
         </h3>
         <div class="detailed-info-wrapper">
 
-            <div class="detail-host">
+            <div class="detail-host-wrapper">
                 <h4 status="host-ip">192.168.0.1</h4>
+                <div class="detail-host-content">
 
-                <h5>Host information</h5>
-                <table class="host-global-table">
-                    <tr>
-                        <th>IP Address</th>
-                        <th>Hostname</th>
-                        <th>Mac Address</th>
-                        <th>Operating System</th>
-                    </tr>
-                    <tr>
-                        <td class="temp">192.168.0.1</td>
-                        <td class="temp">testHost</td>
-                        <td class="temp">ff:ff:ff:ff:ff:ff</td>
-                        <td class="temp">Linux ftw 420.69</td>
-                    </tr>
-                </table>
+                    <h5>Host information</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Hostname</th>
+                            <th>Mac Address</th>
+                            <th>Operating System</th>
+                        </tr>
+                        <tr>
+                            <td class="temp">192.168.0.1</td>
+                            <td class="temp">testHost</td>
+                            <td class="temp">ff:ff:ff:ff:ff:ff</td>
+                            <td class="temp">Linux ftw 420.69</td>
+                        </tr>
+                    </table>
 
-                <h5>Port Scan results</h5>
-                <table class="host-global-table">
-                    <tr>
-                        <th>Port</th>
-                        <th>TCP/UDP</th>
-                        <th>Service</th>
-                        <th>Version</th>
-                        <th>Vulnerabilities identified</th>
-                    </tr>
-                    <tr>
-                        <td>22</td>
-                        <td>TCP</td>
-                        <td>SSH</td>
-                        <td>42</td>
-                        <td>No</td>
-                    </tr>
-                    <tr>
-                        <td>80</td>
-                        <td>TCP</td>
-                        <td>Apache</td>
-                        <td>1.2.3</td>
-                        <td>Yes</td>
-                    </tr>
-                </table>
+                    <h5>Port Scan results</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>Port</th>
+                            <th>TCP/UDP</th>
+                            <th>Service</th>
+                            <th>Version</th>
+                            <th>Vulnerabilities identified</th>
+                        </tr>
+                        <tr>
+                            <td>22</td>
+                            <td>TCP</td>
+                            <td>SSH</td>
+                            <td>42</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td>80</td>
+                            <td>TCP</td>
+                            <td>Apache</td>
+                            <td>1.2.3</td>
+                            <td>Yes</td>
+                        </tr>
+                    </table>
 
-                <h5>Vulnerabilities found</h5>
-                <table class="host-global-table">
-                    <tr>
-                        <th>Service</th>
-                        <th>CVE</th>
-                        <th>Short description</th>
-                        <th>Link</th>
-                    </tr>
-                    <tr>
-                        <td>Bloup</td>
-                        <td>12</td>
-                        <td>Privilege Escalation</td>
-                        <td>click here</td>
-                    </tr>
-                </table>
+                    <h5>Vulnerabilities found</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>Service</th>
+                            <th>CVE</th>
+                            <th>Short description</th>
+                            <th>Link</th>
+                        </tr>
+                        <tr>
+                            <td>Bloup</td>
+                            <td>12</td>
+                            <td>Privilege Escalation</td>
+                            <td>click here</td>
+                        </tr>
+                    </table>
+                </div>
             </div>
 
-            <div class="detail-host">
-                <h4 status="host-ip">192.168.0.1</h4>
-            </div>
+
+            <div class="detail-host-wrapper">
+                    <h4 status="host-ip">192.168.0.1</h4>
+                    <div class="detail-host-content">
+    
+                        <h5>Host information</h5>
+                        <table class="host-global-table">
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Hostname</th>
+                                <th>Mac Address</th>
+                                <th>Operating System</th>
+                            </tr>
+                            <tr>
+                                <td class="temp">192.168.0.1</td>
+                                <td class="temp">testHost</td>
+                                <td class="temp">ff:ff:ff:ff:ff:ff</td>
+                                <td class="temp">Linux ftw 420.69</td>
+                            </tr>
+                        </table>
+    
+                        <h5>Port Scan results</h5>
+                        <table class="host-global-table">
+                            <tr>
+                                <th>Port</th>
+                                <th>TCP/UDP</th>
+                                <th>Service</th>
+                                <th>Version</th>
+                                <th>Vulnerabilities identified</th>
+                            </tr>
+                            <tr>
+                                <td>22</td>
+                                <td>TCP</td>
+                                <td>SSH</td>
+                                <td>42</td>
+                                <td>No</td>
+                            </tr>
+                            <tr>
+                                <td>80</td>
+                                <td>TCP</td>
+                                <td>Apache</td>
+                                <td>1.2.3</td>
+                                <td>Yes</td>
+                            </tr>
+                        </table>
+    
+                        <h5>Vulnerabilities found</h5>
+                        <table class="host-global-table">
+                            <tr>
+                                <th>Service</th>
+                                <th>CVE</th>
+                                <th>Short description</th>
+                                <th>Link</th>
+                            </tr>
+                            <tr>
+                                <td>Bloup</td>
+                                <td>12</td>
+                                <td>Privilege Escalation</td>
+                                <td>click here</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+            
         </div>
     </div>
 
