@@ -21,9 +21,25 @@ class Export():
         today_date = datetime.datetime.now().strftime('%Y-%m-%d (%H:%M)')
         duration = 13
 
+        hosts_status = [
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'down'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'down'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+            {'ip': '192.168.0.1', 'status': 'up'},
+        ]
+
         with open('export.html', 'w') as outfile:
             outfile.write(self.template.render(
                 style=style,
                 date=today_date,
                 duration=duration,
+                hosts_status=hosts_status
             ))

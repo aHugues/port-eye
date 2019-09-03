@@ -26,6 +26,10 @@ td {
     padding: 2px 5px;
 }
 
+th {
+    padding: 2px 5px; 
+}
+
 .table-vertical-header {
     padding-right: 60px;
     font-weight: 500;
@@ -33,6 +37,29 @@ td {
 
 .global-table {
     margin-left: 60px;
+}
+
+.host-global-table {
+    margin-left: 30px;
+}
+
+.status-table {
+    margin-left: 60px;
+}
+
+.status-up {
+    background-color: #4CAF50;
+    color: #ECEFF1;
+}
+
+.status-down {
+    background-color: #f44336;
+    color: #ECEFF1;
+}
+
+.detail-host {
+    padding-left: 30px;
+    color: #455A64;
 }
 
 /* .global-table-col-l {

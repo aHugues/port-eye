@@ -50,16 +50,97 @@
         <h3 class="category-title">
             Machines Summary
         </h3>
-        <div>42 Machines detected online</div>
-        <div class="todo">
-            LIST OF MACHINES with status (UP/DOWN)
-        </div> 
+
+        <div><span class="temp">42</span> Machines detected online</div>
+        <table class="status-table">
+            <tr>
+                <th>Host</th>
+                <th>Status</th>
+            </tr>
+            {% for host in hosts_status %}
+            <tr>
+                <td>{{ host.ip }}</td>
+                {% if host.status == "up" %}
+                    <td class="status-up">{{ host.status }}</td>
+                {% else %}
+                    <td class="status-down">{{ host.status }}</td>
+                {% endif %}                
+            </tr>
+            {% endfor %}
+        </table>
     </div>
 
 
     <div>
-        <div class="todo">
-            Detailed info
+        <h3 class="category-title">
+            Detailed Results
+        </h3>
+        <div class="detailed-info-wrapper">
+
+            <div class="detail-host">
+                <h4 status="host-ip">192.168.0.1</h4>
+
+                <h5>Host information</h5>
+                <table class="host-global-table">
+                    <tr>
+                        <th>IP Address</th>
+                        <th>Hostname</th>
+                        <th>Mac Address</th>
+                        <th>Operating System</th>
+                    </tr>
+                    <tr>
+                        <td class="temp">192.168.0.1</td>
+                        <td class="temp">testHost</td>
+                        <td class="temp">ff:ff:ff:ff:ff:ff</td>
+                        <td class="temp">Linux ftw 420.69</td>
+                    </tr>
+                </table>
+
+                <h5>Port Scan results</h5>
+                <table class="host-global-table">
+                    <tr>
+                        <th>Port</th>
+                        <th>TCP/UDP</th>
+                        <th>Service</th>
+                        <th>Version</th>
+                        <th>Vulnerabilities identified</th>
+                    </tr>
+                    <tr>
+                        <td>22</td>
+                        <td>TCP</td>
+                        <td>SSH</td>
+                        <td>42</td>
+                        <td>No</td>
+                    </tr>
+                    <tr>
+                        <td>80</td>
+                        <td>TCP</td>
+                        <td>Apache</td>
+                        <td>1.2.3</td>
+                        <td>Yes</td>
+                    </tr>
+                </table>
+
+                <h5>Vulnerabilities found</h5>
+                <table class="host-global-table">
+                    <tr>
+                        <th>Service</th>
+                        <th>CVE</th>
+                        <th>Short description</th>
+                        <th>Link</th>
+                    </tr>
+                    <tr>
+                        <td>Bloup</td>
+                        <td>12</td>
+                        <td>Privilege Escalation</td>
+                        <td>click here</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="detail-host">
+                <h4 status="host-ip">192.168.0.1</h4>
+            </div>
         </div>
     </div>
 
