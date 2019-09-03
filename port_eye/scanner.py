@@ -9,6 +9,8 @@ class Scanner():
         self.raw_host = host
         self.host = str(host)
         self.scanner = nmap.PortScanner()
+        self.full_scan_available = False
+        self.reachable = False
 
         if type(host) not in [
             ipaddress.IPv4Address,
@@ -23,6 +25,7 @@ class Scanner():
         """Check if the target can be reached."""
         self.scanner.scan(self.host, arguments='-sn --host-timeout 10s')
         try:
+            self.reachable = True
             return self.scanner[self.host].state() == 'up'
         except KeyError:
             return False
@@ -32,6 +35,12 @@ class Scanner():
     def is_local(self):
         """Check if the target is in local network."""
         return self.raw_host.is_private
+    
+
+    def perform_scan(self):
+        """Perform nmap scanning on selected host."""
+        self.scanner.scan(self.host, sudo=True)
+
     
 
     
