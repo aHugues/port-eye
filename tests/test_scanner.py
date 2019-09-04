@@ -1,8 +1,10 @@
 """Test functions for the Scanner class."""
 
 from port_eye.scanner import Scanner
+from port_eye.report import PortReport
 import ipaddress
 import pytest
+
 
 def test_wrong_format():
     """Test that a wrong format for a host is detected."""
@@ -51,7 +53,51 @@ def test_reachable():
     for host in reachable_hosts:
         scanner = Scanner(host)
         assert scanner.is_reachable() is True
-    
+
     for host in unreachable_hosts:
         scanner = Scanner(host)
         assert scanner.is_reachable() is False
+
+
+def test_protocol_verification():
+    """Test that only acceptable protocols types are accepted."""
+
+    host = ipaddress.ip_address('127.0.0.1')
+    scanner = Scanner(host)
+
+    scanner.perform_scan()
+
+    scanner.extract_ports('tcp')
+    scanner.extract_ports('udp')
+    scanner.extract_ports('TCP')
+    scanner.extract_ports('UDP')
+
+    with pytest.raises(ValueError):
+        scanner.extract_ports('http')
+
+    with pytest.raises(ValueError):
+        scanner.extract_ports('ssl')
+
+
+def test_ports_scanning():
+    """Test the scanning of ports.
+
+    Test is ran on a machine with at least ports 22/80/443 opened.
+    """
+    host = ipaddress.ip_address('92.222.10.88')
+    scanner = Scanner(host)
+
+    assert scanner.is_local() is False
+    assert scanner.is_reachable() is True
+
+    scanner.perform_scan()
+    ports = scanner.extract_ports('tcp')
+
+    assert len(ports) >= 3
+    for port in ports:
+        assert type(port) == PortReport
+
+    expected_ports = [22, 80, 443]
+    port_numbers = [port.port_number for port in ports]
+    for expected_port in expected_ports:
+        assert expected_port in port_numbers
