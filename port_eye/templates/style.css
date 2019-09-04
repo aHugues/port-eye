@@ -1,0 +1,91 @@
+body {
+    color: #212121;
+}
+
+.category-title {
+    width: 70%;
+    border-bottom: 1px solid #90A4AE;
+    color: #37474F;
+}
+
+.todo {
+    font-weight: bold;
+    background-color: red;
+}
+
+.temp {
+    font-weight: bold;
+    color: #E91E63;
+}
+
+table {
+    border: 1px solid #B0BEC5;
+}
+
+td {
+    padding: 2px 5px;
+}
+
+th {
+    padding: 2px 5px; 
+    text-align: left;
+}
+
+.table-vertical-header {
+    padding-right: 60px;
+    font-weight: 500;
+}
+
+.global-table {
+    margin-left: 60px;
+}
+
+.category-wrapper {
+    margin-left: 10px;
+    margin-bottom: 20px;
+}
+
+.host-global-table {
+    margin-left: 30px;
+}
+
+.status-table {
+    margin-left: 60px;
+}
+
+.status-up {
+    box-sizing: border-box;
+    background-color: #4CAF50;
+    color: #ECEFF1;
+}
+
+.status-down {
+    box-sizing: border-box;
+    background-color: #f44336;
+    color: #ECEFF1;
+}
+
+.hosts-count {
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+
+.detail-host-wrapper {
+    margin-top: 20px;
+    margin-bottom: 40px;
+    padding-left: 30px;
+    color: #455A64;
+}
+
+.detail-host-content {
+    padding-left: 10px;
+    border-left: 2px solid #CFD8DC
+}
+
+/* .global-table-col-l {
+    width: 60%;
+}
+
+.global-table-col-s {
+    width: 40%;
+} */

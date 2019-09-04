@@ -1,0 +1,49 @@
+==================
+Exercice Technique
+==================
+
+Sujet:
+======
+Écrire un scanner de port simple à utiliser qui sort ses résultats en une page HTML avec les plus d'information utile possible sur les cibles.
+
+Spécifications:
+===============
+- programme CLI écrit en python (compatible python2 et python3)
+- utiliser en interne l'outil "nmap" pour réaliser les scans
+- accepter en argument les définitions de cibles suivante:
+    - host / ipv4 / ipv6 / cidr
+    - liste de host / ipv4 / ipv6 / cidr
+    - un fichier contenant une liste de cible (host, ip, cidr)
+- afficher la progression du scan en cours et éventuellement des informations sur les résultats préliminaires du scan
+- afficher un court résumé dans la console lorsque les scans sont terminés
+- sortir le résultat complet des scans dans un fichier html qui contient à minima:
+    - les machines détéctées online
+    - leurs ip / hostname et éventuellement addresse MAC si dans un réseau local
+    - les ports ouverts
+    - les services associés à ces ports + version si disponible
+- le temps de scan doit être le plus court possible (tout en récupérant le maximum d'information)
+
+Bonus points:
+=============
+    - toute autre information jugée pertinente vis à vis de l'évaluation du niveau de sécurité des cibles
+    - utiliser les scripts nmap NSE pour sortir plus d'informations sur les vulnérabilités éventuelles (ex: login anonyme accessible, screenshot de page web, etc.)
+    - pour chaque service ouvert détecté, identifier les CVE potentielles (https://cve.mitre.org/data/downloads/index.html)
+
+Rendu attendu:
+==============
+une archive tgz qui contient:
+    - le code source python du programme répondant à l'exercice
+    - un fichier texte README.txt qui contient les informations suivantes sur le programme: sa description, les instructions pour son utilisation, son déploiement en production de manière sécurisé, ses tests et toute autre information pertinente
+    - un fichier texte REPORT.txt qui contient les informations sur la résolution de cet exercice, notamment le temps nécessaire, les ressources utilisées, les pistes suivies (bonnes ou pas), l'approche retenue, les difficultés rencontrées, etc.
+    - un dossier test contenant le nécessaire pour s'assurer du bon fonctionnement du programme
+    - plus tout autre fichier ou ressource jugée importante
+
+Critères d'évaluation:
+======================
+dans cet ordre d'importance:
+    - atteinte de l'objectif
+    - respect des consignes
+    - qualité du code (propre, clair, concis, documenté, ...)
+    - performances du code
+    - qualité du rendu des résultats (clair, lisible, joli)
+    - ... et dernier, les bonus points
