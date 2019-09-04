@@ -2,7 +2,7 @@
 
 import ipaddress
 import nmap
-from .report import PortReport
+from .report import PortReport, HostReport
 
 
 class Scanner():
@@ -74,3 +74,22 @@ class Scanner():
 
         finally:
             return ports
+
+    def extract_host_report(self):
+        """Extract the complete report from the host."""
+
+        duration = float(self.scanner.scanstats()['elapsed'])
+        hostname = self.scanner[self.host]['hostnames'][0]['name']
+        mac = ''
+        state = 'up'
+        ports = self.extract_ports('tcp') + self.extract_ports('udp')
+
+        host_report = HostReport(
+            self.host,
+            hostname,
+            mac,
+            state,
+            ports
+        )
+
+        return host_report

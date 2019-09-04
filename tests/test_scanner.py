@@ -1,7 +1,7 @@
 """Test functions for the Scanner class."""
 
 from port_eye.scanner import Scanner
-from port_eye.report import PortReport
+from port_eye.report import PortReport, HostReport
 import ipaddress
 import pytest
 
@@ -99,5 +99,30 @@ def test_ports_scanning():
 
     expected_ports = [22, 80, 443]
     port_numbers = [port.port_number for port in ports]
+    for expected_port in expected_ports:
+        assert expected_port in port_numbers
+
+
+def test_host_scanning():
+    """Test the report extraction from a complete host."""
+
+    host = ipaddress.ip_address('92.222.10.88')
+    scanner = Scanner(host)
+    scanner.perform_scan()
+
+    report = scanner.extract_host_report()
+    assert type(report) == HostReport
+
+    assert report.hostname == 'valinor.aurelienhugues.com'
+    assert report.ip == '92.222.10.88'
+    assert report.mac == ''
+    assert report.state == 'up'
+    assert len(report.ports) >= 3
+
+    for port in report.ports:
+        assert type(port) == PortReport
+
+    expected_ports = [22, 80, 443]
+    port_numbers = [port.port_number for port in report.ports]
     for expected_port in expected_ports:
         assert expected_port in port_numbers
