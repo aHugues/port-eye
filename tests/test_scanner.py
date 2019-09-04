@@ -62,7 +62,7 @@ def test_reachable():
 def test_protocol_verification():
     """Test that only acceptable protocols types are accepted."""
 
-    host = ipaddress.ip_address('127.0.0.1')
+    host = ipaddress.ip_address(u'127.0.0.1')
     scanner = Scanner(host)
 
     scanner.perform_scan()
@@ -84,7 +84,7 @@ def test_ports_scanning():
 
     Test is ran on a machine with at least ports 22/80/443 opened.
     """
-    host = ipaddress.ip_address('92.222.10.88')
+    host = ipaddress.ip_address(u'92.222.10.88')
     scanner = Scanner(host)
 
     assert scanner.is_local() is False
@@ -95,7 +95,7 @@ def test_ports_scanning():
 
     assert len(ports) >= 3
     for port in ports:
-        assert type(port) == PortReport
+        assert port.__class__ == PortReport
 
     expected_ports = [22, 80, 443]
     port_numbers = [port.port_number for port in ports]
@@ -106,12 +106,12 @@ def test_ports_scanning():
 def test_host_scanning():
     """Test the report extraction from a complete host."""
 
-    host = ipaddress.ip_address('92.222.10.88')
+    host = ipaddress.ip_address(u'92.222.10.88')
     scanner = Scanner(host)
     scanner.perform_scan()
 
     report = scanner.extract_host_report()
-    assert type(report) == HostReport
+    assert report.__class__ == HostReport
 
     assert report.hostname == 'valinor.aurelienhugues.com'
     assert report.ip == '92.222.10.88'
@@ -120,7 +120,7 @@ def test_host_scanning():
     assert len(report.ports) >= 3
 
     for port in report.ports:
-        assert type(port) == PortReport
+        assert port.__class__ == PortReport
 
     expected_ports = [22, 80, 443]
     port_numbers = [port.port_number for port in report.ports]
