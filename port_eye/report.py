@@ -1,9 +1,10 @@
 """Handle complete data for report."""
 
+
 class Vulnerability:
     """Represent a vulnerability.
 
-    # Attributes 
+    # Attributes
     service (str): Affected service
     CVE (str): ID of the vulnerability
     description (str): Descripton of the CVE
@@ -12,16 +13,15 @@ class Vulnerability:
 
     def __init__(self, service, cve, description, link):
         """Create a new Vulnerability object."""
-        self.service = service 
-        self.cve = cve 
-        self.description = description 
+        self.service = service
+        self.cve = cve
+        self.description = description
         self.link = link
-
 
 
 class PortReport:
     """Represent the detailed results for a port.
-    
+
     # Attributes
     port_number (int): Port number
     state (str): State of the port (open/closed/filtered)
@@ -33,15 +33,15 @@ class PortReport:
     """
 
     def __init__(self,
-        port_number, state, tcp, udp, service, version, vulnerabilities):
+                 port_number, state, tcp, udp,
+                 service, version, vulnerabilities):
         self.port_number = port_number
-        self.state = state 
-        self.tcp = tcp 
+        self.state = state
+        self.tcp = tcp
         self.udp = udp
-        self.service = service 
-        self.version = version 
+        self.service = service
+        self.version = version
         self.vulnerabilities = vulnerabilities
-
 
 
 class HostReport:
@@ -50,18 +50,17 @@ class HostReport:
     # Attributes
     ip (str): IP address of the host
     hostname (str): Hostname of the scanned host
-    mac (str): MAC address of the host 
+    mac (str): MAC address of the host
     state (str): State of the host (up or down)
     ports (List of PortReport): List of scanned ports
     """
 
     def __init__(self, ip, hostname, mac, state, ports):
-        self.ip = ip 
-        self.hostname =  hostname 
-        self.mac = mac 
-        self.state = state 
-        self.ports = ports 
-
+        self.ip = ip
+        self.hostname = hostname
+        self.mac = mac
+        self.state = state
+        self.ports = ports
 
 
 class Report:
@@ -78,6 +77,6 @@ class Report:
         nb_hosts = len(results)
         up = len([x for x in results if x.state == 'up'])
         self.nb_hosts = nb_hosts
-        self.up = up 
+        self.up = up
         self.results = results
-
+        self.duration = duration
