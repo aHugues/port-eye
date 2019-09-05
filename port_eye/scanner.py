@@ -40,7 +40,7 @@ class Scanner():
 
     def perform_scan(self):
         """Perform nmap scanning on selected host."""
-        self.scanner.scan(self.host, sudo=True)
+        self.scanner.scan(self.host, sudo=False)
 
     def extract_ports(self, protocol):
         """Extract the scanned port from the host.
