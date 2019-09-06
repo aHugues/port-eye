@@ -22,9 +22,9 @@
                 <th class="global-table-header">Online</th>
             </tr>
             <tr>
-                <td class="global-table-content">13s</td>
-                <td class="global-table-content">42</td>
-                <td class="global-table-content">12</td>
+                <td class="global-table-content">{{ report.duration }}s</td>
+                <td class="global-table-content">{{ report.nb_hosts }}</td>
+                <td class="global-table-content">{{ report.up }}</td>
             </tr>
         </table>
     </div>
@@ -35,20 +35,20 @@
             Machines Summary
         </h3>
 
-        <div class="hosts-count"><span class="temp">42</span> Machines detected online</div>
+        <div class="hosts-count">{{ report.up }} Machines detected online</div>
 
         <table class="status-table">
             <tr>
                 <th>Host</th>
                 <th>Status</th>
             </tr>
-            {% for host in hosts_status %}
+            {% for host in report.results %}
             <tr>
                 <td>{{ host.ip }}</td>
-                {% if host.status == "up" %}
-                    <td class="status-up">{{ host.status }}</td>
+                {% if host.state == "up" %}
+                    <td class="status-up">{{ host.state }}</td>
                 {% else %}
-                    <td class="status-down">{{ host.status }}</td>
+                    <td class="status-down">{{ host.state }}</td>
                 {% endif %}                
             </tr>
             {% endfor %}
@@ -62,8 +62,9 @@
         </h3>
         <div class="detailed-info-wrapper">
 
+            {% for host in report.results %}
             <div class="detail-host-wrapper">
-                <h4 status="host-ip">192.168.0.1</h4>
+                <h4 status="host-ip">{{ host.ip }}</h4>
                 <div class="detail-host-content">
 
                     <h5>Host information</h5>
@@ -75,9 +76,9 @@
                             <th>Operating System</th>
                         </tr>
                         <tr>
-                            <td class="temp">192.168.0.1</td>
-                            <td class="temp">testHost</td>
-                            <td class="temp">ff:ff:ff:ff:ff:ff</td>
+                            <td>{{ host.ip }}</td>
+                            <td>{{ host.hostname }}</td>
+                            <td>{{ host.mac }}</td>
                             <td class="temp">Linux ftw 420.69</td>
                         </tr>
                     </table>
@@ -91,20 +92,17 @@
                             <th>Version</th>
                             <th>Vulnerabilities identified</th>
                         </tr>
+                        {% for port in host.ports %}
                         <tr>
-                            <td>22</td>
-                            <td>TCP</td>
-                            <td>SSH</td>
-                            <td>42</td>
-                            <td>No</td>
+                            <td>{{ port.port_number }}</td>
+                            <td>
+                                {% if port.tcp %}TCP{% else %}UDP{% endif %}
+                            </td>
+                            <td>{{ port.service }}</td>
+                            <td>{{ port.version }}</td>
+                            <td class="temp">Yes</td>
                         </tr>
-                        <tr>
-                            <td>80</td>
-                            <td>TCP</td>
-                            <td>Apache</td>
-                            <td>1.2.3</td>
-                            <td>Yes</td>
-                        </tr>
+                        {% endfor %}
                     </table>
 
                     <h5>Vulnerabilities found</h5>
@@ -124,70 +122,8 @@
                     </table>
                 </div>
             </div>
+            {% endfor %}
 
-
-            <div class="detail-host-wrapper">
-                    <h4 status="host-ip">192.168.0.1</h4>
-                    <div class="detail-host-content">
-    
-                        <h5>Host information</h5>
-                        <table class="host-global-table">
-                            <tr>
-                                <th>IP Address</th>
-                                <th>Hostname</th>
-                                <th>Mac Address</th>
-                                <th>Operating System</th>
-                            </tr>
-                            <tr>
-                                <td class="temp">192.168.0.1</td>
-                                <td class="temp">testHost</td>
-                                <td class="temp">ff:ff:ff:ff:ff:ff</td>
-                                <td class="temp">Linux ftw 420.69</td>
-                            </tr>
-                        </table>
-    
-                        <h5>Port Scan results</h5>
-                        <table class="host-global-table">
-                            <tr>
-                                <th>Port</th>
-                                <th>TCP/UDP</th>
-                                <th>Service</th>
-                                <th>Version</th>
-                                <th>Vulnerabilities identified</th>
-                            </tr>
-                            <tr>
-                                <td>22</td>
-                                <td>TCP</td>
-                                <td>SSH</td>
-                                <td>42</td>
-                                <td>No</td>
-                            </tr>
-                            <tr>
-                                <td>80</td>
-                                <td>TCP</td>
-                                <td>Apache</td>
-                                <td>1.2.3</td>
-                                <td>Yes</td>
-                            </tr>
-                        </table>
-    
-                        <h5>Vulnerabilities found</h5>
-                        <table class="host-global-table">
-                            <tr>
-                                <th>Service</th>
-                                <th>CVE</th>
-                                <th>Short description</th>
-                                <th>Link</th>
-                            </tr>
-                            <tr>
-                                <td>Bloup</td>
-                                <td>12</td>
-                                <td>Privilege Escalation</td>
-                                <td>click here</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
 
             
         </div>
