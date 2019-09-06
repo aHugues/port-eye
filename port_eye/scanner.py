@@ -2,7 +2,7 @@
 
 import ipaddress
 import nmap
-from .report import PortReport, HostReport
+from .report import PortReport, HostReport, Report
 
 
 class Scanner():
@@ -40,7 +40,8 @@ class Scanner():
 
     def perform_scan(self):
         """Perform nmap scanning on selected host."""
-        self.scanner.scan(self.host, sudo=False)
+        # TODO first scan without option to get the most info, scan with Pn if no success
+        self.scanner.scan(self.host, arguments='-Pn', sudo=False)
 
     def extract_ports(self, protocol):
         """Extract the scanned port from the host.
@@ -93,3 +94,27 @@ class Scanner():
         )
 
         return (host_report, duration)
+
+
+
+class ScannerHandler():
+
+    def __init__(self, ipv4_hosts, ipv6_hosts, cidr_blocks):
+        self.ipv4_hosts = ipv4_hosts
+        self.ipv6_hosts = ipv6_hosts
+        self.cidr_blocks = cidr_blocks
+
+        self.scanners = []
+        for host in (self.ipv4_hosts + self.ipv6_hosts + self.cidr_blocks):
+            self.scanners.append(Scanner(host))
+    
+
+    def run_scans(self):
+        results = []
+        for scanner in self.scanners:
+            scanner.perform_scan()
+            (report, duration) = scanner.extract_host_report()
+            results.append(report)
+        final_report = Report(1337, results)
+        return final_report
+

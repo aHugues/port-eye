@@ -4,24 +4,18 @@ import click
 import ipaddress
 from .utils import read_input_file_json
 from .utils import parse_input_file
-from .scanner import Scanner
+from .scanner import Scanner, ScannerHandler
 from .export import Export
 from .report import Report
 
 
-def run_scans(host, output):
-    """Run scans for a single host."""
+def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks):
+    """Run scans for all the hosts."""
 
-    scanner = Scanner(host)
-    if (scanner.is_reachable()):
-        scanner.perform_scan()
-        (result, duration) = scanner.extract_host_report()
-        full_report = Report(duration, [result])
-        export = Export()
-        export.render(full_report, output)
-        print(result)
-    else:
-        print("Host unreachable")
+    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks)
+    report = handler.run_scans()
+    export = Export()
+    export.render(report, output)
 
 
 @click.command()
@@ -67,8 +61,7 @@ def main(ipv4, ipv6, cidr, file, verbose, output):
             content = {}
         parsed_file = parse_input_file(content)
     
-    for host in parsed_ipv4:
-        run_scans(host, output)
+    run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr)
 
 
 if __name__ == "__main__":
