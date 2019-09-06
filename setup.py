@@ -31,6 +31,7 @@ setup(
     author="Aurélien Hugues",
     author_email="me@aurelienhugues.com",
     packages=find_packages(exclude=["tests*"]),
+    include_package_data=True,
     install_requires=version_specific_packages+[
         "click>=7",
         "python-nmap>=0.6",
