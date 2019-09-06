@@ -92,4 +92,4 @@ class Scanner():
             ports
         )
 
-        return host_report
+        return (host_report, duration)

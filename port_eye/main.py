@@ -5,15 +5,20 @@ import ipaddress
 from .utils import read_input_file_json
 from .utils import parse_input_file
 from .scanner import Scanner
+from .export import Export
+from .report import Report
 
 
-def run_scans(host):
+def run_scans(host, output):
     """Run scans for a single host."""
 
     scanner = Scanner(host)
     if (scanner.is_reachable()):
         scanner.perform_scan()
-        result = scanner.extract_host_report()
+        (result, duration) = scanner.extract_host_report()
+        full_report = Report(duration, [result])
+        export = Export()
+        export.render(full_report, output)
         print(result)
     else:
         print("Host unreachable")
@@ -63,7 +68,7 @@ def main(ipv4, ipv6, cidr, file, verbose, output):
         parsed_file = parse_input_file(content)
     
     for host in parsed_ipv4:
-        run_scans(host)
+        run_scans(host, output)
 
 
 if __name__ == "__main__":
