@@ -5,6 +5,12 @@ import nmap
 from .report import PortReport, HostReport, Report
 import sys
 import time
+import threading
+
+if sys.version_info[0] == 2:
+    import Queue
+else:
+    import queue
 
 
 class Scanner():
@@ -123,9 +129,19 @@ class ScannerHandler():
         for host in self.ipv6_hosts:
             self.scanners.append(Scanner(host, True))
     
+    def run_scan(self, scanner, queue):
+        scanner.perform_scan()
+        try:
+            report = scanner.extract_host_report()
+        except KeyError:
+            scanner.perform_scan(True)
+            report = scanner.extract_host_report()
+        finally:
+            queue.put(report)
 
     def run_scans(self):
-        results = []
+        hosts_queue = queue.Queue()
+        threads = []
 
         # Start time measurement
         if sys.version_info[0] == 2:
@@ -134,20 +150,23 @@ class ScannerHandler():
             start_time = time.perf_counter()
 
         for scanner in self.scanners:
-            scanner.perform_scan()
-            try:
-                report = scanner.extract_host_report()
-            except KeyError:
-                scanner.perform_scan(True)
-                report = scanner.extract_host_report()
-            finally:
-                results.append(report)
+            worker = threading.Thread(
+                target=self.run_scan, args=(scanner, hosts_queue))
+            threads.append(worker)
+            worker.start()
+        
+        for worker in threads:
+            worker.join()
         
         if sys.version_info[0] == 2:
             duration = time.clock() - start_time
         else:
             duration = time.perf_counter() - start_time
 
+        results = []
+        while not hosts_queue.empty():
+            results.append(hosts_queue.get())
+        
         final_report = Report(duration, results)
         return final_report
 
