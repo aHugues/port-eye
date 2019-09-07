@@ -61,7 +61,12 @@ def main(ipv4, ipv6, cidr, file, verbose, output):
             content = {}
         parsed_file = parse_input_file(content)
     
-    run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr)
+    if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
+        run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr)
+    else:
+        ctx = click.get_current_context()
+        click.echo(ctx.get_help())
+        ctx.exit()
 
 
 if __name__ == "__main__":
