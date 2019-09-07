@@ -64,3 +64,29 @@ def parse_input_file(file_content):
         'ipv6': parsed_ipv6,
         'cidr': parsed_cidr,
     }
+
+
+def parse_duration_from_seconds(raw_duration):
+    """Return a string in the xxHyyMzzs format from a number of seconds.
+    
+    ## Arguments
+    - raw_duration (float): Number of seconds in the duration
+    
+    ## Returns
+    - duration (str): String representing the full duration in H/M/s
+    """
+
+    if raw_duration < 0:
+        raise ValueError("Duration should be positive.")
+    else:
+        seconds = int(raw_duration % 60)
+        minutes = int(((raw_duration - seconds) / 60) % 60)
+        hours = int((raw_duration - seconds - (minutes * 60)) / 3600)
+
+        result = "{}s".format(seconds)
+        if minutes > 0 or hours > 0:
+            result = "{}m".format(minutes) + result
+        if hours > 0:
+            result = "{}h".format(hours) + result
+
+        return result
