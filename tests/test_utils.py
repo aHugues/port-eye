@@ -6,6 +6,7 @@ from ipaddress import IPv4Address, IPv6Address, IPv4Network
 from port_eye.utils import read_input_file_json
 from port_eye.utils import read_input_file_txt
 from port_eye.utils import parse_input_file
+from port_eye.utils import parse_duration_from_seconds
 
 
 def test_reading_json_file():
@@ -56,5 +57,26 @@ def test_correct_parsing():
         assert type(host) == IPv6Address
     for network in parsed_content["cidr"]:
         assert type(network) == IPv4Network
+
+
+def test_duration_parsing():
+    """Test that the duration is correctly parsed."""
+
+    # Test that a negative value is correctly caught
+    with pytest.raises(ValueError):
+        parse_duration_from_seconds(-2)
+    
+    # Test values lower than a minute
+    assert parse_duration_from_seconds(0) == "0s"
+    assert parse_duration_from_seconds(42) == "42s"
+
+    # Test values lower than an hour
+    assert parse_duration_from_seconds(60) == "1m0s"
+    assert parse_duration_from_seconds(80) == "1m20s"
+    assert parse_duration_from_seconds(124) == "2m4s"
+
+    # Test values higher than an hour
+    assert parse_duration_from_seconds(3784) == "1h3m4s"
+    assert parse_duration_from_seconds(3642) == "1h0m42s"
 
 

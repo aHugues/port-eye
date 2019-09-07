@@ -1,5 +1,7 @@
 """Handle complete data for report."""
 
+from .utils import parse_duration_from_seconds
+
 
 class Vulnerability:
     """Represent a vulnerability.
@@ -63,20 +65,23 @@ class HostReport:
     mac (str): MAC address of the host
     state (str): State of the host (up or down)
     ports (List of PortReport): List of scanned ports
+    duration (float): Test duration for the scan
     """
 
-    def __init__(self, ip, hostname, mac, state, ports):
+    def __init__(self, ip, hostname, mac, state, ports, duration):
         self.ip = ip
         self.hostname = hostname
         self.mac = mac
         self.state = state
         self.ports = ports
+        self.duration = parse_duration_from_seconds(duration)
     
     def __str__(self):
         returned_string = "HostReport {} - {}".format(self.ip, self.state)
         returned_string += "\n\tHostname: {}".format(self.hostname)
         if self.mac != '':
             returned_string += "\n\tMAC Address: {}".format(self.mac)
+        returned_string += " ({}s)".format(self.duration)
         returned_string += "\n\tPorts:"
         for port in self.ports:
             returned_string += "\n\t\t- {}".format(str(port))
@@ -99,7 +104,7 @@ class Report:
         self.nb_hosts = nb_hosts
         self.up = up
         self.results = results
-        self.duration = duration
+        self.duration = parse_duration_from_seconds(duration)
     
     def __str__(self):
         returned_string = "Scanning report\n================\n\n\n"

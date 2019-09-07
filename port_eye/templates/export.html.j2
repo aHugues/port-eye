@@ -22,7 +22,7 @@
                 <th class="global-table-header">Online</th>
             </tr>
             <tr>
-                <td class="global-table-content">{{ report.duration }}s</td>
+                <td class="global-table-content">{{ report.duration }}</td>
                 <td class="global-table-content">{{ report.nb_hosts }}</td>
                 <td class="global-table-content">{{ report.up }}</td>
             </tr>
@@ -71,12 +71,14 @@
                     <table class="host-global-table">
                         <tr>
                             <th>IP Address</th>
+                            <th>Duration</th>
                             <th>Hostname</th>
                             <th>Mac Address</th>
                             <th>Operating System</th>
                         </tr>
                         <tr>
                             <td>{{ host.ip }}</td>
+                            <td>{{ host.duration }}</td>
                             <td>{{ host.hostname }}</td>
                             <td>{{ host.mac }}</td>
                             <td class="temp">Linux ftw 420.69</td>
