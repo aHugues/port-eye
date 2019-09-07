@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <style>
+        {{ style }}
+    </style>
+</head>
+
+<body>
+
+    <h1 class="report-title">Scanning Report {{ date }}</h1>
+
+    <div class="category-wrapper">
+        <h3 class="category-title">
+            Global information
+        </h3>
+        <table class="global-table">
+            <tr>
+                <th class="global-table-header">Duration</th>
+                <th class="global-table-header">Tested hosts</th>
+                <th class="global-table-header">Online</th>
+            </tr>
+            <tr>
+                <td class="global-table-content">{{ report.duration }}</td>
+                <td class="global-table-content">{{ report.nb_hosts }}</td>
+                <td class="global-table-content">{{ report.up }}</td>
+            </tr>
+        </table>
+    </div>
+
+       
+    <div class="category-wrapper">
+        <h3 class="category-title">
+            Machines Summary
+        </h3>
+
+        <div class="hosts-count">{{ report.up }} Machines detected online</div>
+
+        <table class="status-table">
+            <tr>
+                <th>Host</th>
+                <th>Status</th>
+            </tr>
+            {% for host in report.results %}
+            <tr>
+                <td>{{ host.ip }}</td>
+                {% if host.state == "up" %}
+                    <td class="status-up">{{ host.state }}</td>
+                {% else %}
+                    <td class="status-down">{{ host.state }}</td>
+                {% endif %}                
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+
+    <div>
+        <h3 class="category-title">
+            Detailed Results
+        </h3>
+        <div class="detailed-info-wrapper">
+
+            {% for host in report.results %}
+            <div class="detail-host-wrapper">
+                <h4 status="host-ip">{{ host.ip }}</h4>
+                <div class="detail-host-content">
+
+                    <h5>Host information</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Duration</th>
+                            <th>Hostname</th>
+                            <th>Mac Address</th>
+                            <th>Operating System</th>
+                        </tr>
+                        <tr>
+                            <td>{{ host.ip }}</td>
+                            <td>{{ host.duration }}</td>
+                            <td>{{ host.hostname }}</td>
+                            <td>{{ host.mac }}</td>
+                            <td class="temp">Linux ftw 420.69</td>
+                        </tr>
+                    </table>
+
+                    <h5>Port Scan results</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>Port</th>
+                            <th>TCP/UDP</th>
+                            <th>Service</th>
+                            <th>Version</th>
+                            <th>Vulnerabilities identified</th>
+                        </tr>
+                        {% for port in host.ports %}
+                        <tr>
+                            <td>{{ port.port_number }}</td>
+                            <td>
+                                {% if port.tcp %}TCP{% else %}UDP{% endif %}
+                            </td>
+                            <td>{{ port.service }}</td>
+                            <td>{{ port.version }}</td>
+                            <td class="temp">Yes</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+
+                    <h5>Vulnerabilities found</h5>
+                    <table class="host-global-table">
+                        <tr>
+                            <th>Service</th>
+                            <th>CVE</th>
+                            <th>Short description</th>
+                            <th>Link</th>
+                        </tr>
+                        <tr>
+                            <td>Bloup</td>
+                            <td>12</td>
+                            <td>Privilege Escalation</td>
+                            <td>click here</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+
+
+            
+        </div>
+    </div>
+
+
+</body>
+
+
+
+
+
+
+
+
+</html>
