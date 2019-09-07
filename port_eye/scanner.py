@@ -8,9 +8,9 @@ import time
 import threading
 
 if sys.version_info[0] == 2: # pragma: no cover
-    import Queue
+    from Queue import Queue
 else:
-    import queue
+    from queue import Queue
 
 
 
@@ -141,7 +141,7 @@ class ScannerHandler():
             queue.put(report)
 
     def run_scans(self):
-        hosts_queue = queue.Queue()
+        hosts_queue = Queue()
         threads = []
 
         # Start time measurement
