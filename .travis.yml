@@ -8,6 +8,8 @@ python:
   - "3.7"
 
 before_install:
+  - sudo apt update
+  - sudo apt install nmap -y
   - pip install .
 
 install:

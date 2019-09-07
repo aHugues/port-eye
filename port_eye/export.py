@@ -1,6 +1,7 @@
 """Export functions to HTML."""
 
-from jinja2 import Environment, PackageLoader, select_autoescape
+from jinja2 import Environment, PackageLoader
+from jinja2 import ChoiceLoader, select_autoescape, FileSystemLoader
 import datetime
 
 
@@ -8,8 +9,11 @@ class Export:
 
     def __init__(self):
         """Create a new Export element."""
+        loader1 = PackageLoader('port_eye', 'templates')
+        loader2 = FileSystemLoader('./templates/', 'port_eye/templates/')
+        loader = ChoiceLoader([loader1, loader2])
         self.env = Environment(
-            loader=PackageLoader('port_eye', 'templates'),
+            loader=loader,
             autoescape=select_autoescape(['html'])
         )
         self.template = self.env.get_template('export.html.j2')
@@ -29,11 +33,10 @@ class Export:
 
         style = self.load_style()
         today_date = datetime.datetime.now().strftime('%Y-%m-%d (%H:%M)')
-        new_report = report
-        new_report.date = today_date
 
         with open(path, 'w') as outfile:
             outfile.write(self.template.render(
                 style=style,
-                report=report
+                report=report,
+                date = today_date
             ))
