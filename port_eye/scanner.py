@@ -101,10 +101,10 @@ class Scanner():
             hostname,
             mac,
             state,
-            ports
+            ports, duration
         )
 
-        return (host_report, duration)
+        return host_report
 
 
 
@@ -127,10 +127,10 @@ class ScannerHandler():
         for scanner in self.scanners:
             scanner.perform_scan()
             try:
-                (report, duration) = scanner.extract_host_report()
+                report = scanner.extract_host_report()
             except KeyError:
                 scanner.perform_scan(True)
-                (report, duration) = scanner.extract_host_report()
+                report = scanner.extract_host_report()
             finally:
                 results.append(report)
         final_report = Report(1337, results)

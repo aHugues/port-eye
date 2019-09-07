@@ -110,7 +110,7 @@ def test_host_scanning():
     scanner = Scanner(host)
     scanner.perform_scan()
 
-    report, duration = scanner.extract_host_report()
+    report = scanner.extract_host_report()
     assert report.__class__ == HostReport
 
     assert report.hostname == 'valinor.aurelienhugues.com'

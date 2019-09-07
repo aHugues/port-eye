@@ -63,20 +63,23 @@ class HostReport:
     mac (str): MAC address of the host
     state (str): State of the host (up or down)
     ports (List of PortReport): List of scanned ports
+    duration (float): Test duration for the scan
     """
 
-    def __init__(self, ip, hostname, mac, state, ports):
+    def __init__(self, ip, hostname, mac, state, ports, duration):
         self.ip = ip
         self.hostname = hostname
         self.mac = mac
         self.state = state
         self.ports = ports
+        self.duration = duration
     
     def __str__(self):
         returned_string = "HostReport {} - {}".format(self.ip, self.state)
         returned_string += "\n\tHostname: {}".format(self.hostname)
         if self.mac != '':
             returned_string += "\n\tMAC Address: {}".format(self.mac)
+        returned_string += " ({}s)".format(self.duration)
         returned_string += "\n\tPorts:"
         for port in self.ports:
             returned_string += "\n\t\t- {}".format(str(port))
