@@ -7,20 +7,18 @@ import sys
 import time
 import threading
 
-if sys.version_info[0] == 2:
-    import Queue
+if sys.version_info[0] == 2: # pragma: no cover
+    from Queue import Queue
 else:
-    import queue
+    from queue import Queue
+
 
 
 class Scanner():
 
     def __init__(self, host, is_ipv6=False):
         self.raw_host = host
-        if host == 'localhost':
-            self.host = '127.0.0.1'
-        else:
-            self.host = str(host)
+        self.host = str(host)
         self.scanner = nmap.PortScanner()
         self.full_scan_available = False
         self.reachable = False
@@ -39,7 +37,7 @@ class Scanner():
         argument = '-sn --host-timeout 10s'
         if self.is_ipv6:
             argument += ' -6'
-        self.scanner.scan(self.host, arguments='-sn --host-timeout 10s')
+        self.scanner.scan(self.host, arguments=argument)
         try:
             self.reachable = True
             return self.scanner[self.host].state() == 'up'
@@ -134,13 +132,16 @@ class ScannerHandler():
         try:
             report = scanner.extract_host_report()
         except KeyError:
-            scanner.perform_scan(True)
-            report = scanner.extract_host_report()
+            try:
+                scanner.perform_scan(True)
+                report = scanner.extract_host_report()
+            except KeyError:
+                pass
         finally:
             queue.put(report)
 
     def run_scans(self):
-        hosts_queue = queue.Queue()
+        hosts_queue = Queue()
         threads = []
 
         # Start time measurement

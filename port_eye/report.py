@@ -47,7 +47,7 @@ class PortReport:
     
     def __str__(self):
         port_type = 'TCP' if self.tcp else 'UDP'
-        returned_string = "[{}] Port {} ({}):  ".format(
+        returned_string = "[{}] Port {} ({}): ".format(
             port_type, self.port_number, self.state)
         service = 'Unknown' if self.service == '' else self.service
         returned_string += service
@@ -81,7 +81,7 @@ class HostReport:
         returned_string += "\n\tHostname: {}".format(self.hostname)
         if self.mac != '':
             returned_string += "\n\tMAC Address: {}".format(self.mac)
-        returned_string += " ({}s)".format(self.duration)
+        returned_string += " ({})".format(self.duration)
         returned_string += "\n\tPorts:"
         for port in self.ports:
             returned_string += "\n\t\t- {}".format(str(port))
@@ -108,9 +108,10 @@ class Report:
     
     def __str__(self):
         returned_string = "Scanning report\n================\n\n\n"
-        returned_string += "{} Hosts scanned in {}s".format(
+        returned_string += "{} Hosts scanned in {}".format(
             self.nb_hosts, self.duration)
         returned_string += "\n{} Hosts up\n\n".format(self.up)
         for host in self.results:
             returned_string += "\n* {}".format(str(host))
+        return returned_string
 
