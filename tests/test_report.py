@@ -124,3 +124,73 @@ def test_create_report():
     assert report.nb_hosts == 3
     assert report.up == 2
     assert report.duration == "42s"
+
+
+def test_str_port_report():
+    """Test the str function for PortReport."""
+
+    port_report_1 = PortReport(
+        22, 'up', True, False, 'ssh', '1.2.3', []
+    )
+    port_report_2 = PortReport(
+        123, 'up', False, True, '', '', []
+    )
+
+    assert str(port_report_1) == "[TCP] Port 22 (up): ssh - Version 1.2.3"
+    assert str(port_report_2) == "[UDP] Port 123 (up): Unknown"
+
+
+def test_str_host_report():
+    """Test the str function for HostReport."""
+
+    port_report_1 = PortReport(
+        22, 'up', True, False, 'ssh', '1.2.3', []
+    )
+    port_report_2 = PortReport(
+        123, 'up', False, True, '', '', []
+    )
+
+    host_report = HostReport(
+        '127.0.0.1', 'localhost', 'ff:ff:ff', 'up',
+        [port_report_1, port_report_2],
+        421.69
+    )
+
+    result_lines = str(host_report).split('\n')
+    assert result_lines[0] == "HostReport 127.0.0.1 - up"
+    assert result_lines[1] == "\tHostname: localhost"
+    assert result_lines[2] == "\tMAC Address: ff:ff:ff (7m1s)"
+    assert result_lines[3] == "\tPorts:"
+    assert result_lines[4] == "\t\t- [TCP] Port 22 (up): ssh - Version 1.2.3"
+    assert result_lines[5] == "\t\t- [UDP] Port 123 (up): Unknown"
+
+
+def test_str_full_report():
+    """Test the str function for Report."""
+
+    port_report_1 = PortReport(
+        22, 'up', True, False, 'ssh', '1.2.3', []
+    )
+    port_report_2 = PortReport(
+        123, 'up', False, True, '', '', []
+    )
+
+    host_report = HostReport(
+        '127.0.0.1', 'localhost', 'ff:ff:ff', 'up',
+        [port_report_1, port_report_2],
+        421.69
+    )
+
+    full_report = Report(421.69, [host_report])
+
+    result_lines = str(full_report).split('\n')
+    assert result_lines[0] == "Scanning report"
+    assert result_lines[1] == "================"
+    assert result_lines[4] == "1 Hosts scanned in 7m1s"
+    assert result_lines[5] == "1 Hosts up"
+    assert result_lines[8] == "* HostReport 127.0.0.1 - up"
+    assert result_lines[9] == "\tHostname: localhost"
+    assert result_lines[10] == "\tMAC Address: ff:ff:ff (7m1s)"
+    assert result_lines[11] == "\tPorts:"
+    assert result_lines[12] == "\t\t- [TCP] Port 22 (up): ssh - Version 1.2.3"
+    assert result_lines[13] == "\t\t- [UDP] Port 123 (up): Unknown"
