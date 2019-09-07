@@ -62,7 +62,7 @@ def test_create_host_report():
     assert host_report.hostname == 'hostname1'
     assert host_report.mac == 'ff:ff:ff:ff:ff:ff'
     assert host_report.state == 'up'
-    assert host_report.duration == 42.1337
+    assert host_report.duration == '42s'
     assert len(host_report.ports) == 2
     assert len(host_report.ports[0].vulnerabilities) == 2
     assert len(host_report.ports[1].vulnerabilities) == 1
@@ -123,4 +123,4 @@ def test_create_report():
 
     assert report.nb_hosts == 3
     assert report.up == 2
-    assert report.duration == 42
+    assert report.duration == "42s"
