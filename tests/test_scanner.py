@@ -1,9 +1,20 @@
 """Test functions for the Scanner class."""
 
-from port_eye.scanner import Scanner
-from port_eye.report import PortReport, HostReport
-import ipaddress
+import sys
 import pytest
+import ipaddress
+from port_eye.scanner import Scanner, ScannerHandler
+from port_eye.report import PortReport, HostReport, Report
+import threading
+
+if sys.version_info[0] == 2: # pragma: no cover
+    from Queue import Queue
+else:
+    from queue import Queue
+
+
+def test_import():
+    """Test that the correct version of queue/Queue is imported."""
 
 
 def test_wrong_format():
@@ -44,7 +55,6 @@ def test_reachable():
     reachable_hosts = [
         ipaddress.ip_address(u"127.0.0.1"),
         ipaddress.ip_address(u"92.222.10.88"),
-        # ipaddress.ip_address(u"2a00:1450:4007:80a::200e")
     ]
     unreachable_hosts = [
         ipaddress.ip_address(u"192.0.2.1")
@@ -57,6 +67,14 @@ def test_reachable():
     for host in unreachable_hosts:
         scanner = Scanner(host)
         assert scanner.is_reachable() is False
+
+
+def test_reachable_ipv6():
+    """Check the detection of reachable hosts while IPV6."""
+    reachable_host = ipaddress.ip_address(
+        u"2a01:e0a:129:5ed0:211:32ff:fea8:97e")
+    scanner = Scanner(reachable_host, True)
+    assert scanner.is_reachable() is True
 
 
 def test_protocol_verification():
@@ -126,3 +144,85 @@ def test_host_scanning():
     port_numbers = [port.port_number for port in report.ports]
     for expected_port in expected_ports:
         assert expected_port in port_numbers
+
+
+def test_host_scanning_ipv6():
+    """Test the report extraction from an IPV6 host."""
+
+    host = ipaddress.ip_address(u"::1")
+    scanner = Scanner(host, True)
+    scanner.perform_scan()
+
+    report = scanner.extract_host_report()
+    assert report.__class__ == HostReport
+
+    assert report.hostname == 'localhost'
+    assert report.ip == '::1'
+    assert report.state == 'up'
+    assert len(report.ports) >= 0
+
+
+def test_scanner_handler_creation():
+    """Test the creation of a ScannerHandler object."""
+    ipv4_hosts = [
+        ipaddress.ip_address(u"127.0.0.1"),
+        ipaddress.ip_address(u"92.222.10.88"),
+    ]
+    ipv6_hosts = [
+        ipaddress.ip_address(u"::1")
+    ]
+    cidr_blocks = [
+        ipaddress.ip_network(u"192.168.0.1/32")
+    ]
+
+    scanner_handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks)
+
+    assert len(scanner_handler.ipv4_hosts) == 2
+    assert len(scanner_handler.ipv6_hosts) == 1
+    assert len(scanner_handler.cidr_blocks) == 1
+
+    for host in scanner_handler.ipv4_hosts:
+        assert host.__class__ == ipaddress.IPv4Address
+    for host in scanner_handler.ipv6_hosts:
+        assert host.__class__ == ipaddress.IPv6Address
+    for host in scanner_handler.cidr_blocks:
+        assert host.__class__ == ipaddress.IPv4Network
+    
+    assert len(scanner_handler.scanners) == 4
+    for scanner in scanner_handler.scanners:
+        assert scanner.__class__ == Scanner
+
+
+def test_scan_handling():
+    """Test that scanning is performed without issue."""
+    ipv4_hosts = [
+        ipaddress.ip_address(u"127.0.0.1"),
+        ipaddress.ip_address(u"192.0.2.1")
+    ]
+    scanner_handler = ScannerHandler(ipv4_hosts, [], [])
+    hosts_queue = Queue()
+
+    scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue)
+
+    assert hosts_queue.qsize() == 1
+    assert hosts_queue.get().__class__ == HostReport
+
+
+def test_running_scans():
+    """Test running full scans."""
+    ipv4_hosts = [
+        ipaddress.ip_address(u"127.0.0.1")
+    ]
+    ipv6_hosts = [
+        ipaddress.ip_address(u"::1")
+    ]
+
+    scanner_handler = ScannerHandler(ipv4_hosts, ipv6_hosts, [])
+    report = scanner_handler.run_scans()
+
+    assert report.__class__ == Report
+    assert report.nb_hosts == 2
+    assert report.up == 2
+    assert type(report.duration) == str
+    assert "127.0.0.1" in [x.ip for x in report.results]
+    assert "::1" in [x.ip for x in report.results]
