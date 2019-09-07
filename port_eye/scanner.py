@@ -3,6 +3,8 @@
 import ipaddress
 import nmap
 from .report import PortReport, HostReport, Report
+import sys
+import time
 
 
 class Scanner():
@@ -124,6 +126,13 @@ class ScannerHandler():
 
     def run_scans(self):
         results = []
+
+        # Start time measurement
+        if sys.version_info[0] == 2:
+            start_time = time.clock()
+        else:
+            start_time = time.perf_counter()
+
         for scanner in self.scanners:
             scanner.perform_scan()
             try:
@@ -133,6 +142,12 @@ class ScannerHandler():
                 report = scanner.extract_host_report()
             finally:
                 results.append(report)
-        final_report = Report(1337, results)
+        
+        if sys.version_info[0] == 2:
+            duration = time.clock() - start_time
+        else:
+            duration = time.perf_counter() - start_time
+
+        final_report = Report(duration, results)
         return final_report
 
