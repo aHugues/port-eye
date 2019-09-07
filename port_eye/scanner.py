@@ -7,7 +7,7 @@ from .report import PortReport, HostReport, Report
 
 class Scanner():
 
-    def __init__(self, host):
+    def __init__(self, host, is_ipv6=False):
         self.raw_host = host
         if host == 'localhost':
             self.host = '127.0.0.1'
@@ -16,6 +16,7 @@ class Scanner():
         self.scanner = nmap.PortScanner()
         self.full_scan_available = False
         self.reachable = False
+        self.is_ipv6 = is_ipv6
 
         if type(host) not in [
             ipaddress.IPv4Address,
@@ -27,6 +28,9 @@ class Scanner():
 
     def is_reachable(self):
         """Check if the target can be reached."""
+        argument = '-sn --host-timeout 10s'
+        if self.is_ipv6:
+            argument += ' -6'
         self.scanner.scan(self.host, arguments='-sn --host-timeout 10s')
         try:
             self.reachable = True
@@ -38,10 +42,17 @@ class Scanner():
         """Check if the target is in local network."""
         return self.raw_host.is_private
 
-    def perform_scan(self):
-        """Perform nmap scanning on selected host."""
-        # TODO first scan without option to get the most info, scan with Pn if no success
-        self.scanner.scan(self.host, arguments='-Pn', sudo=False)
+    def perform_scan(self, ping_skip=False):
+        """Perform nmap scanning on selected host.
+        
+        # Arguments
+        # ping_skip (Bool) default False: Skip ping if they are blocked.
+        """
+        arguments = '-Pn' if ping_skip else '-sV'
+        if self.is_ipv6:
+            arguments += ' -6'
+        self.scanner.scan(self.host, arguments=arguments, sudo=False)
+
 
     def extract_ports(self, protocol):
         """Extract the scanned port from the host.
@@ -105,16 +116,23 @@ class ScannerHandler():
         self.cidr_blocks = cidr_blocks
 
         self.scanners = []
-        for host in (self.ipv4_hosts + self.ipv6_hosts + self.cidr_blocks):
+        for host in (self.ipv4_hosts + self.cidr_blocks):
             self.scanners.append(Scanner(host))
+        for host in self.ipv6_hosts:
+            self.scanners.append(Scanner(host, True))
     
 
     def run_scans(self):
         results = []
         for scanner in self.scanners:
             scanner.perform_scan()
-            (report, duration) = scanner.extract_host_report()
-            results.append(report)
+            try:
+                (report, duration) = scanner.extract_host_report()
+            except KeyError:
+                scanner.perform_scan(True)
+                (report, duration) = scanner.extract_host_report()
+            finally:
+                results.append(report)
         final_report = Report(1337, results)
         return final_report
 
