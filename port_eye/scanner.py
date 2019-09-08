@@ -135,21 +135,21 @@ class ScannerHandler():
         scanner.perform_scan()
         try:
             report = scanner.extract_host_report()
+            queue.put(report)
         except KeyError:
             try:
                 scanner.perform_scan(True)
                 report = scanner.extract_host_report()
+                queue.put(report)
             except KeyError:
                 pass
-        finally:
-            queue.put(report)
 
     def run_scans(self):
         hosts_queue = Queue()
         threads = []
 
         # Start time measurement
-        if sys.version_info[0] == 2:
+        if sys.version_info[0] == 2: # pragma: no cover
             start_time = time.clock()
         else:
             start_time = time.perf_counter()
@@ -164,7 +164,7 @@ class ScannerHandler():
             worker.join()
         
         if sys.version_info[0] == 2:
-            duration = time.clock() - start_time
+            duration = time.clock() - start_time # pragma: no cover
         else:
             duration = time.perf_counter() - start_time
 

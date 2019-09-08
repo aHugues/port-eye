@@ -5,7 +5,6 @@ from port_eye.mock_nmap import MockPortScanner
 
 def test_ping_blocked():
     """Test non-detection of hosts when ping blocked."""
-
     host = u"82.64.28.100"
     scanner = MockPortScanner()
     assert scanner.reachable(host) is False
@@ -13,7 +12,6 @@ def test_ping_blocked():
 
 def test_ping_skipped():
     """Test detection of hosts when ping skipped."""
-
     host = u"82.64.28.100"
     scanner = MockPortScanner()
     assert scanner.reachable(host, skip_ping=True) is True
@@ -21,7 +19,6 @@ def test_ping_skipped():
 
 def test_port_range():
     """Test that only allowed ports can be used."""
-
     host = 'localhost'
     scanner = MockPortScanner()
     with pytest.raises(KeyError):
@@ -30,7 +27,6 @@ def test_port_range():
 
 def test_additionnal_info_removal():
     """Test that additionnal info are removed when skipping ping."""
-
     host = 'localhost'
     scanner = MockPortScanner()
 

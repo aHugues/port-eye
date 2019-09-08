@@ -9,10 +9,10 @@ from .export import Export
 from .report import Report
 
 
-def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks):
+def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     """Run scans for all the hosts."""
 
-    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks)
+    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks, mock=mock)
     report = handler.run_scans()
     export = Export()
     export.render(report, output)
@@ -43,10 +43,14 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks):
     is_flag=True,
     help="Display verbose logging in the terminal",)
 @click.option(
+    '--mock', '-m',
+    is_flag=True,
+    help="Use mock API instead of really running nmap")
+@click.option(
     '--output', '-o',
-    type=click.Path(exists=False),
+    type=click.Path(exists=False), required=True,
     help="Output HTML file into which the results must be stored")
-def main(ipv4, ipv6, cidr, file, verbose, output):
+def main(ipv4, ipv6, cidr, file, verbose, mock, output):
     """Run the main application from arguments provided in the CLI."""
     parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
     parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
@@ -61,8 +65,12 @@ def main(ipv4, ipv6, cidr, file, verbose, output):
             content = {}
         parsed_file = parse_input_file(content)
     
+        parsed_ipv4 += parsed_file['ipv4']
+        parsed_ipv6 += parsed_file['ipv6']
+        parsed_cidr += parsed_file['cidr']
+    
     if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
-        run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr)
+        run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr, mock)
     else:
         ctx = click.get_current_context()
         click.echo(ctx.get_help())

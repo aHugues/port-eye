@@ -17,7 +17,7 @@ install:
 
 script: 
   - pytest --cov
-  - port-eye
+  - port-eye --help
 
 after_success: 
   - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then codecov; fi
