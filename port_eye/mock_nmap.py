@@ -1,20 +1,31 @@
 """Mock nmap scanner to be used for unit testing in the CI process."""
 
 import sys
+from nmap import PortScannerHostDict
 
 class MockPortScanner():
     """MockPortScanner allows to use a mock version of nmap from Python."""
 
     def __init__(self):
         """Initialize MockPortScanner module."""
-        pass 
+        self._scan_result = {} 
+    
+    def __getitem__(self, host):
+        """Return a host detail."""
+        if sys.version_info[0]==2:
+            assert type(host) in (str, unicode), 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
+        else:
+            assert type(host) is str, 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
+        return self._scan_result['scan'][host]
 
-    def build_global_test_info(self, host, skip_ping=False, ipv6=False):
+    def build_global_test_info(
+        self, host, skip_ping=False, ipv6=False, reachable=True):
         """Build the command_line and scanstats parts of the response.
 
         :param host: scanned host
         :param skip_ping: bool for skipping ping (default to False)
         :param ipv6: bool for creating request for ipv6 host (default to False)
+        :param reachable: bool to set the host state (default to True)
 
         :returns global_result as dictionnary
         """
@@ -26,16 +37,42 @@ class MockPortScanner():
             host
         )
         elapsed = '10.7' if skip_ping else '4.2'
+        downhosts = '0' if reachable else '1'
+        uphosts = '1' if reachable else '0'
+
         return {
             'command_line': command_line,
             'scanstats': {
                 'timestr': 'Sun Sep  8 10:21:46 2019',
                 'elapsed': elapsed,
-                'uphosts': '1',
-                'downhosts': '0',
+                'uphosts': uphosts,
+                'downhosts': downhosts,
                 'totalhosts': '1',
             }
         }
+    
+    def reachable(self, host, skip_ping=False):
+        """Test if the host should be reachable.
+
+        :param host: host to test
+        :param skip_ping: bool for skipping ping (default to False)
+        
+        :returns reachable as bool
+        """
+        reachable_full = [
+            '127.0.0.1',
+            '::1',
+            '92.222.10.88',
+            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da'
+        ]
+        reachable_skip = [
+            '82.64.28.100'
+        ]
+
+        if skip_ping:
+            return host in (reachable_full + reachable_skip)
+        else:
+            return host in reachable_full
     
     def build_tcp_result(self, port, skip_ping=False):
         """Build the result for a port.
@@ -92,34 +129,55 @@ class MockPortScanner():
             
             return ports_result[port]
     
-    def build_result_ipv4(self, ports, skip_ping=False):
+    def build_result_ipv4(self, host, ports, skip_ping=False):
         """Build the returned dict for ipv4 hosts
 
         If the skip_ping argument is set to True, results are sure to be 
         computed, but the result will have less information.
 
+        :param host: host to scan
         :param ports: list of ports to scan (must be in range (22, 80, 443))
         :param skip_ping: bool for skipping ping (default to False)
 
         :returns: scan_result as dictionnary
         """
-        global_infos = self.build_global_test_info('127.0.0.1', skip_ping)
+        global_infos = self.build_global_test_info(host, skip_ping)
         tcp_dict = {}
         for port in ports:
             tcp_dict[port] = self.build_tcp_result(port, skip_ping)
 
+        host_dict = {
+                    'hostnames': [{'name': 'localhost', 'type': 'PTR'}],
+                    'addresses': {'ipv4': host},
+                    'status': {'state': 'up', 'reason': 'conn-refused'},
+                    'tcp': tcp_dict
+        }
+
         result = {
             'nmap': global_infos,
             'scan': {
-                '127.0.0.1': {
-                    'hostnames': [{'name': 'localhost', 'type': 'PTR'}],
-                    'addresses': {'ipv4': '127.0.0.1'},
-                    'status': {'state': 'up', 'reason': 'conn-refused'},
-                    'tcp': tcp_dict
-                }
+                host: PortScannerHostDict(host_dict)
             }
         }
         return result
+    
+    def build_result_unreachable(self, host, skip_ping = False):
+        """Build the returned dict for an unreachable host
+
+        :param host: host to scan
+        :param skip_ping: bool for skipping ping (default to False)
+
+        :returns: scan_result as dictionnary
+        """
+        global_infos = self.build_global_test_info(
+            host, skip_ping, reachable=False)
+        
+        result = {
+            'nmap': global_infos,
+            'scan': {}
+        }
+
+        return result 
 
     def scan(self, hosts="127.0.0.1", ports=None, arguments="-sV", sudo=False):
         """Scan given hosts
@@ -151,5 +209,10 @@ class MockPortScanner():
         if is_ipv6:
             return None
         
-        return self.build_result_ipv4(ports, skip_ping)
+        if self.reachable(hosts, skip_ping):
+            result = self.build_result_ipv4(hosts, ports, skip_ping)
+        else:
+            result = self.build_result_unreachable(hosts, skip_ping)
+        self._scan_result = result
+        return result
 
