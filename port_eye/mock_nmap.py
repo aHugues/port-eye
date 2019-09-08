@@ -1,6 +1,7 @@
 """Mock nmap scanner to be used for unit testing in the CI process."""
 
 import sys
+import logging
 from nmap import PortScannerHostDict
 
 class MockPortScanner():
@@ -8,6 +9,7 @@ class MockPortScanner():
 
     def __init__(self):
         """Initialize MockPortScanner module."""
+        logging.debug("Creating MockPortScanner")
         self._scan_result = {} 
     
     def __getitem__(self, host):
