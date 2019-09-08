@@ -12,7 +12,7 @@ class MockPortScanner():
     
     def __getitem__(self, host):
         """Return a host detail."""
-        if sys.version_info[0]==2:
+        if sys.version_info[0]==2: # pragma: no cover
             assert type(host) in (str, unicode), 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
         else:
             assert type(host) is str, 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
@@ -135,7 +135,8 @@ class MockPortScanner():
             '127.0.0.1': 'localhost',
             '92.222.10.88': 'example.com',
             '::1': 'localhost',
-            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da': 'acme.me'
+            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da': 'acme.me',
+            "82.64.28.100": 'acne.bad'
         }
         return hostnames[host]
     
@@ -217,7 +218,7 @@ class MockPortScanner():
 
         :returns: scan_result as dictionnary
         """
-        if sys.version_info[0]==2:
+        if sys.version_info[0]==2: # pragma: no cover
             assert type(hosts) in (str, unicode), 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
             assert type(ports) in (str, unicode, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) in (str, unicode), 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
@@ -226,7 +227,7 @@ class MockPortScanner():
             assert type(ports) in (str, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) is str, 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
 
-        skip_ping = "-Pn" in arguments
+        skip_ping = "Pn" in arguments
         ipv = 'ipv6' if "6" in arguments else 'ipv4'
 
 
