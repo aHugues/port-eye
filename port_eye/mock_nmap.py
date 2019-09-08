@@ -133,12 +133,13 @@ class MockPortScanner():
         """Return the hostname for an ip."""
         hostnames = {
             '127.0.0.1': 'localhost',
-            '92.222.10.88': 'valinor.aurelienhugues.com',
-            '::1': 'localhost'
+            '92.222.10.88': 'example.com',
+            '::1': 'localhost',
+            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da': 'acme.me'
         }
         return hostnames[host]
     
-    def build_result_ipv4(self, host, ports, skip_ping=False):
+    def build_result_ipv4(self, host, ports, skip_ping=False, ipv='ipv4'):
         """Build the returned dict for ipv4 hosts
 
         If the skip_ping argument is set to True, results are sure to be 
@@ -147,6 +148,7 @@ class MockPortScanner():
         :param host: host to scan
         :param ports: list of ports to scan (must be in range (22, 80, 443))
         :param skip_ping: bool for skipping ping (default to False)
+        :param ipv: str indicating qui IPversion is used (default ipv4)
 
         :returns: scan_result as dictionnary
         """
@@ -158,7 +160,7 @@ class MockPortScanner():
 
         host_dict = {
                     'hostnames': [{'name': hostname, 'type': 'PTR'}],
-                    'addresses': {'ipv4': host},
+                    'addresses': {ipv: host},
                     'status': {'state': 'up', 'reason': 'conn-refused'},
                     'tcp': tcp_dict
         }
@@ -225,16 +227,16 @@ class MockPortScanner():
             assert type(arguments) is str, 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
 
         skip_ping = "-Pn" in arguments
-        is_ipv6 = "6" in arguments
+        ipv = 'ipv6' if "6" in arguments else 'ipv4'
+
 
         ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
-        if is_ipv6:
-            return None
         
         if self.reachable(hosts, skip_ping):
-            result = self.build_result_ipv4(hosts, ports, skip_ping)
+            result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv)
         else:
             result = self.build_result_unreachable(hosts, skip_ping)
+
         self._scan_result = result
         return result
 
