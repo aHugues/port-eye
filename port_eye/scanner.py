@@ -135,14 +135,14 @@ class ScannerHandler():
         scanner.perform_scan()
         try:
             report = scanner.extract_host_report()
+            queue.put(report)
         except KeyError:
             try:
                 scanner.perform_scan(True)
                 report = scanner.extract_host_report()
+                queue.put(report)
             except KeyError:
                 pass
-        finally:
-            queue.put(report)
 
     def run_scans(self):
         hosts_queue = Queue()
