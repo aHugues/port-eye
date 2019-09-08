@@ -149,7 +149,7 @@ class ScannerHandler():
         threads = []
 
         # Start time measurement
-        if sys.version_info[0] == 2:
+        if sys.version_info[0] == 2: # pragma: no cover
             start_time = time.clock()
         else:
             start_time = time.perf_counter()
@@ -164,7 +164,7 @@ class ScannerHandler():
             worker.join()
         
         if sys.version_info[0] == 2:
-            duration = time.clock() - start_time
+            duration = time.clock() - start_time # pragma: no cover
         else:
             duration = time.perf_counter() - start_time
 
