@@ -1,5 +1,7 @@
 dist: xenial
 language: python
+services:
+   - docker
 
 python:
   - "2.7"
@@ -8,6 +10,8 @@ python:
   - "3.7"
 
 before_install:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then docker build -t ahugues/port-eye .; fi
   - sudo apt update
   - sudo apt install nmap -y
   - pip install .
@@ -23,10 +27,15 @@ after_success:
   - if [[ $TRAVIS_PYTHON_VERSION == 3.7 ]]; then codecov; fi
 
 deploy:
-  provider: pypi
-  distributions: "sdist bdist_wheel"
-  username: $PYPI_USERNAME
-  password: $PYPI_PASSWORD
-  on:
-    tags: true
-    python: 3.7
+  - provider: pypi
+    distributions: "sdist bdist_wheel"
+    username: $PYPI_USERNAME
+    password: $PYPI_PASSWORD
+    on:
+      tags: true
+      python: 3.7
+  - provider: script
+    script: bash docker_push
+    on:
+      tags: true
+      python: 3.7
