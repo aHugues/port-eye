@@ -129,6 +129,15 @@ class MockPortScanner():
             
             return ports_result[port]
     
+    def get_hostname(self, host):
+        """Return the hostname for an ip."""
+        hostnames = {
+            '127.0.0.1': 'localhost',
+            '92.222.10.88': 'valinor.aurelienhugues.com',
+            '::1': 'localhost'
+        }
+        return hostnames[host]
+    
     def build_result_ipv4(self, host, ports, skip_ping=False):
         """Build the returned dict for ipv4 hosts
 
@@ -143,11 +152,12 @@ class MockPortScanner():
         """
         global_infos = self.build_global_test_info(host, skip_ping)
         tcp_dict = {}
+        hostname = self.get_hostname(host)
         for port in ports:
             tcp_dict[port] = self.build_tcp_result(port, skip_ping)
 
         host_dict = {
-                    'hostnames': [{'name': 'localhost', 'type': 'PTR'}],
+                    'hostnames': [{'name': hostname, 'type': 'PTR'}],
                     'addresses': {'ipv4': host},
                     'status': {'state': 'up', 'reason': 'conn-refused'},
                     'tcp': tcp_dict
@@ -178,6 +188,18 @@ class MockPortScanner():
         }
 
         return result 
+    
+    def scanstats(self):
+        """
+        returns scanstats structure
+        {'uphosts': '3', 'timestr': 'Thu Jun  3 21:45:07 2010', 'downhosts': '253', 'totalhosts': '256', 'elapsed': '5.79'}
+
+        may raise AssertionError exception if called before scanning
+        """
+        assert 'nmap' in self._scan_result, 'Do a scan before trying to get result !'
+        assert 'scanstats' in self._scan_result['nmap'], 'Do a scan before trying to get result !'
+
+        return self._scan_result['nmap']['scanstats']        
 
     def scan(self, hosts="127.0.0.1", ports=None, arguments="-sV", sudo=False):
         """Scan given hosts
