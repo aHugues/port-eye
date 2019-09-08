@@ -27,7 +27,7 @@ def test_wrong_format():
 def test_correct_format():
     """Test that the create of a scanner works."""
     host = ipaddress.ip_address(u"192.168.0.1")
-    scanner = Scanner(host)
+    scanner = Scanner(host, mock=True)
     assert scanner.raw_host == host
     assert scanner.host == u"192.168.0.1"
 
@@ -39,10 +39,10 @@ def test_detection_private_host():
     private_ipv6 = ipaddress.ip_address(u"fe80::a00:27ff:fe8f:ec03")
     public_ipv6 = ipaddress.ip_address(u"2a00:1450:4007:80a::200e")
 
-    scanner_private_ipv4 = Scanner(private_host)
-    scanner_public_ipv4 = Scanner(public_host)
-    scanner_private_ipv6 = Scanner(private_ipv6)
-    scanner_public_ipv6 = Scanner(public_ipv6)
+    scanner_private_ipv4 = Scanner(private_host, mock=True)
+    scanner_public_ipv4 = Scanner(public_host, mock=True)
+    scanner_private_ipv6 = Scanner(private_ipv6, mock=True)
+    scanner_public_ipv6 = Scanner(public_ipv6, mock=True)
 
     assert scanner_private_ipv4.is_local() is True
     assert scanner_public_ipv4.is_local() is False
@@ -61,11 +61,11 @@ def test_reachable():
     ]
 
     for host in reachable_hosts:
-        scanner = Scanner(host)
+        scanner = Scanner(host, mock=True)
         assert scanner.is_reachable() is True
 
     for host in unreachable_hosts:
-        scanner = Scanner(host)
+        scanner = Scanner(host, mock=True)
         assert scanner.is_reachable() is False
 
 # This test is disabled because of lack of support from TravisCI
@@ -81,7 +81,7 @@ def test_protocol_verification():
     """Test that only acceptable protocols types are accepted."""
 
     host = ipaddress.ip_address(u'127.0.0.1')
-    scanner = Scanner(host)
+    scanner = Scanner(host, mock=True)
 
     scanner.perform_scan()
 
@@ -103,7 +103,7 @@ def test_ports_scanning():
     Test is ran on a machine with at least ports 22/80/443 opened.
     """
     host = ipaddress.ip_address(u'92.222.10.88')
-    scanner = Scanner(host)
+    scanner = Scanner(host, mock=True)
 
     assert scanner.is_local() is False
     assert scanner.is_reachable() is True
@@ -125,7 +125,7 @@ def test_host_scanning():
     """Test the report extraction from a complete host."""
 
     host = ipaddress.ip_address(u'92.222.10.88')
-    scanner = Scanner(host)
+    scanner = Scanner(host, mock=True)
     scanner.perform_scan()
 
     report = scanner.extract_host_report()
@@ -175,7 +175,8 @@ def test_scanner_handler_creation():
         ipaddress.ip_network(u"192.168.0.1/32")
     ]
 
-    scanner_handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks)
+    scanner_handler = ScannerHandler(
+        ipv4_hosts, ipv6_hosts, cidr_blocks, mock=True)
 
     assert len(scanner_handler.ipv4_hosts) == 2
     assert len(scanner_handler.ipv6_hosts) == 1
@@ -199,7 +200,7 @@ def test_scan_handling():
         ipaddress.ip_address(u"127.0.0.1"),
         ipaddress.ip_address(u"192.0.2.1")
     ]
-    scanner_handler = ScannerHandler(ipv4_hosts, [], [])
+    scanner_handler = ScannerHandler(ipv4_hosts, [], [], mock=True)
     hosts_queue = Queue()
 
     scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue)
@@ -217,7 +218,7 @@ def test_running_scans():
         # ipaddress.ip_address(u"::1")
     # ]
 
-    scanner_handler = ScannerHandler(ipv4_hosts, [], [])
+    scanner_handler = ScannerHandler(ipv4_hosts, [], [], mock=True)
     report = scanner_handler.run_scans()
 
     assert report.__class__ == Report

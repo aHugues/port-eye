@@ -2,6 +2,7 @@
 
 import ipaddress
 import nmap
+from .mock_nmap import MockPortScanner
 from .report import PortReport, HostReport, Report
 import sys
 import time
@@ -16,10 +17,13 @@ else:
 
 class Scanner():
 
-    def __init__(self, host, is_ipv6=False):
+    def __init__(self, host, is_ipv6=False, mock=False):
         self.raw_host = host
         self.host = str(host)
-        self.scanner = nmap.PortScanner()
+        if mock:
+            self.scanner = MockPortScanner()
+        else:
+            self.scanner = nmap.PortScanner()
         self.full_scan_available = False
         self.reachable = False
         self.is_ipv6 = is_ipv6
@@ -39,8 +43,8 @@ class Scanner():
             argument += ' -6'
         self.scanner.scan(self.host, arguments=argument)
         try:
-            self.reachable = True
             return self.scanner[self.host].state() == 'up'
+            self.reachable = True
         except KeyError:
             return False
 
@@ -116,16 +120,16 @@ class Scanner():
 
 class ScannerHandler():
 
-    def __init__(self, ipv4_hosts, ipv6_hosts, cidr_blocks):
+    def __init__(self, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
         self.ipv4_hosts = ipv4_hosts
         self.ipv6_hosts = ipv6_hosts
         self.cidr_blocks = cidr_blocks
 
         self.scanners = []
         for host in (self.ipv4_hosts + self.cidr_blocks):
-            self.scanners.append(Scanner(host))
+            self.scanners.append(Scanner(host, mock=mock))
         for host in self.ipv6_hosts:
-            self.scanners.append(Scanner(host, True))
+            self.scanners.append(Scanner(host, True, mock=mock))
     
     def run_scan(self, scanner, queue):
         scanner.perform_scan()
