@@ -76,8 +76,11 @@ def main(ipv4, ipv6, cidr, file, log_level, mock, output):
             logging.debug("Reading input JSON file.")
             content = read_input_file_json(file)
         else:
-            logging.error("Not available yet.")
             content = {}
+            click.echo("Unsupported input file type", err=True)
+            ctx = click.get_current_context()
+            ctx.exit(2)
+
         parsed_file = parse_input_file(content)
     
         parsed_ipv4 += parsed_file['ipv4']
@@ -97,4 +100,4 @@ def main(ipv4, ipv6, cidr, file, log_level, mock, output):
 
 
 if __name__ == "__main__":
-    main()  # pylint: disable=no-value-for-parameter
+    main()  # pylint: disable=no-value-for-parameter # pragma: no cover
