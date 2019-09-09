@@ -32,7 +32,18 @@ This application is compatible with Python 2.7 and Python 3.5+.
 
 ### Docker installation
 
-TODO
+If you have Docker installed, you can pull the image from Docker-Hub:
+
+```bash
+docker pull ahugues/port-eye
+````
+
+You can also build the image by cloning the repository and running: 
+
+```bash
+docker build -t port-eye .
+```
+
 
 ### Prerequisites
 
@@ -84,7 +95,17 @@ Input hosts can be inputed from the CLI with options like `-h4` or `-h6` and `-c
 results are taken into account at the same time, so both options can be combines. 
 > **Known limitation:** Currently, only input format JSON is supported. More format will be added soon.
 
-**ADD DOCKER INSTRUCTIONS**
+If using Docker, and assuming you are working in a certain directory, you can run a `port-eye` container using:
+
+```bash
+docker run -v "$(pwd)":/files port-eye <options>
+```
+
+Or if built locally
+
+```bash
+docker run -v "$(pwd)":/files port-eye <options>
+```
 
 ### CLI reference
 
