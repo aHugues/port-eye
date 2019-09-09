@@ -10,6 +10,9 @@ COPY port_eye ./port_eye
 
 RUN apk add nmap --no-cache && rm -f /var/cache/apk/*
 RUN pip install .
+RUN mkdir /files
+
+VOLUME /files
 
 ENTRYPOINT [ "port-eye" ]
 CMD []
