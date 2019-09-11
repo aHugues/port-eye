@@ -90,3 +90,15 @@ def parse_duration_from_seconds(raw_duration):
             result = "{}h".format(hours) + result
 
         return result
+
+
+def get_hosts_from_cidr(cidr_block):
+    """Get the list of hosts inside a cidr block.
+    
+    # Arguments
+    cidr_block (IPV4Network): CIDR block to analyze.
+    
+    # Returns
+    hosts (List of IPV4Hosts): List of hosts in the network.
+    """
+    return list(cidr_block.hosts())
