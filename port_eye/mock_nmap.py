@@ -16,7 +16,7 @@ class MockPortScanner():
         """Return a host detail."""
         if sys.version_info[0]==2: # pragma: no cover
             assert type(host) in (str, unicode), 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
-        else:
+        else: # pragma: no cover
             assert type(host) is str, 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
         return self._scan_result['scan'][host]
 
@@ -224,7 +224,7 @@ class MockPortScanner():
             assert type(hosts) in (str, unicode), 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
             assert type(ports) in (str, unicode, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) in (str, unicode), 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
-        else:
+        else: # pragma: no cover
             assert type(hosts) is str, 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
             assert type(ports) in (str, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) is str, 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa

@@ -11,7 +11,7 @@ import logging
 
 if sys.version_info[0] == 2: # pragma: no cover
     from Queue import Queue
-else:
+else: # pragma: no cover
     from queue import Queue
 
 
@@ -166,7 +166,7 @@ class ScannerHandler():
         # Start time measurement
         if sys.version_info[0] == 2: # pragma: no cover
             start_time = time.clock()
-        else:
+        else: # pragma: no cover
             start_time = time.perf_counter()
         
         logging.debug("Starting scans")
@@ -182,9 +182,9 @@ class ScannerHandler():
 
         logging.debug("All scans completed")
         
-        if sys.version_info[0] == 2:
-            duration = time.clock() - start_time # pragma: no cover
-        else:
+        if sys.version_info[0] == 2: # pragma: no cover
+            duration = time.clock() - start_time 
+        else: # pragma: no cover
             duration = time.perf_counter() - start_time
 
         results = []
