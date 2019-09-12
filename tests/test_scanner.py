@@ -172,7 +172,7 @@ def test_scanner_handler_creation():
         ipaddress.ip_address(u"::1")
     ]
     cidr_blocks = [
-        ipaddress.ip_network(u"192.168.0.1/32")
+        ipaddress.ip_network(u"192.168.0.0/30")
     ]
 
     scanner_handler = ScannerHandler(
@@ -189,7 +189,7 @@ def test_scanner_handler_creation():
     for host in scanner_handler.cidr_blocks:
         assert host.__class__ == ipaddress.IPv4Network
     
-    assert len(scanner_handler.scanners) == 4
+    assert len(scanner_handler.scanners) == 5
     for scanner in scanner_handler.scanners:
         assert scanner.__class__ == Scanner
 
