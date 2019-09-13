@@ -121,6 +121,26 @@ def test_ports_scanning():
         assert expected_port in port_numbers
 
 
+def test_scanning_skip():
+    """Test scanning when necessary to skip ping."""
+    host = ipaddress.ip_address(u'82.64.28.100')
+    scanner = Scanner(host, mock=True)
+
+    assert scanner.is_reachable() is True
+
+    scanner.perform_scan()
+    ports = scanner.extract_ports('tcp')
+
+    expected_ports = [22, 80, 443]
+    assert len(ports) >= 3
+    for port in ports:
+        assert port.__class__ == PortReport
+    
+    port_numbers = [port.port_number for port in ports]
+    for expected_port in expected_ports:
+        assert expected_port in port_numbers
+
+
 def test_host_scanning():
     """Test the report extraction from a complete host."""
 
