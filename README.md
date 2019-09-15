@@ -91,9 +91,15 @@ pip install .
 
 When run without any option, `port-eye` will simply display the help message.
 
-Input hosts can be inputed from the CLI with options like `-h4` or `-h6` and `-c` and via an input file in JSON format. All the 
-results are taken into account at the same time, so both options can be combines. 
-> **Known limitation:** Currently, only input format JSON is supported. More format will be added soon.
+Input hosts can be inputed from the CLI with the option `-t` or `-target`. Inputted hosts 
+can be IPV4 and 6 as well as CIDR blocks. 
+
+Hosts can be added from an input file in which hosts are put line by line. Example: 
+```
+127.0.0.1
+::1
+8.8.8.8
+```
 
 If using Docker, and assuming you are working in a certain directory, you can run a `port-eye` container using:
 
@@ -115,16 +121,14 @@ Usage: port-eye [OPTIONS]
   Run the main application from arguments provided in the CLI.
 
 Options:
-  -h4, --ipv4 TEXT                IPV4 address of host to check
-  -h6, --ipv6 TEXT                IPV6 address of host to check
-  -c, --cidr TEXT                 CIDR block of hosts to check
+  -t, --target TEXT               Target host (IPV4, IPV6 or CIDR)
   -f, --file PATH                 File containing the hosts to check
   -l, --logging [debug|info|warning|error]
                                   Select logging level in the terminal
   -m, --mock                      Use mock API instead of really running nmap
   -o, --output PATH               Output HTML file into which the results must
                                   be stored  [required]
-  --help                          Show this message and exit.
+  -h, --help                      Show this message and exit.
 ```
 
 ## Contributing
