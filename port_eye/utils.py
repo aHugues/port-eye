@@ -2,6 +2,7 @@
 
 import json
 import ipaddress
+import sys
 
 
 
@@ -28,6 +29,10 @@ def read_input_file(filepath):
     lines = []
     with open(filepath, 'r') as inputfile:
         lines = inputfile.readlines()
+
+    if sys.version_info[0] == 2: # pragma: no cover
+        lines = [line.decode('utf-8') for line in lines]
+
     return [line.strip() for line in lines]
 
 
@@ -50,6 +55,8 @@ def build_hosts_dict(hosts):
     ipv6_networks = []
     ignored = []
 
+    print(hosts)
+
     for host in hosts:
         try:
             parsed_host = ipaddress.ip_address(host)
@@ -57,7 +64,8 @@ def build_hosts_dict(hosts):
                 ipv4_hosts.append(parsed_host)
             else:
                 ipv6_hosts.append(parsed_host)
-        except ValueError:
+        except ValueError as e:
+            print(e)
             try:
                 parsed_network = ipaddress.ip_network(host)
                 if parsed_network.__class__ == ipaddress.IPv4Network:
@@ -65,6 +73,7 @@ def build_hosts_dict(hosts):
                 else:
                     ipv6_networks.append(parsed_network)
             except ValueError:
+                print(host)
                 ignored.append(host)
     
     return {
