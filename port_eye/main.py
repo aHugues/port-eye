@@ -9,6 +9,8 @@ from .scanner import Scanner, ScannerHandler
 from .export import Export
 from .report import Report
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
 
 def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     """Run scans for all the hosts."""
@@ -22,7 +24,7 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     logging.info("Done.")
 
 
-@click.command()
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
     '--ipv4', '-h4',
     multiple=True,
