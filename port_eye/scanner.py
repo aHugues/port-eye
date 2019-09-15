@@ -49,7 +49,7 @@ class Scanner():
         self.scanner.scan(self.host, arguments=argument, sudo=True)
         try:
             self.reachable = True
-            logging.debug("Host {} is reachable".format(self.host))
+            logging.debug("Test finished for Host {}".format(self.host))
             return self.scanner[self.host].state() == 'up'
         except KeyError:
             self.reachable = False
@@ -66,7 +66,7 @@ class Scanner():
         # Arguments
         # sudo (Bool) default False: Run as privileged user.
         """
-        arguments = '-Sv'
+        arguments = '-sV'
         if self.is_ipv6:
             arguments += ' -6'
         self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
@@ -104,14 +104,24 @@ class Scanner():
         finally:
             return ports
 
-    def extract_host_report(self):
-        """Extract the complete report from the host."""
+    def extract_host_report(self, reachable=True):
+        """Extract the complete report from the host.
+        
+        :params reachable: Is the host up or down"""
 
         duration = float(self.scanner.scanstats()['elapsed'])
-        hostname = self.scanner[self.host]['hostnames'][0]['name']
-        mac = ''
-        state = 'up'
-        ports = self.extract_ports('tcp') + self.extract_ports('udp')
+
+        if reachable:
+            hostname = self.scanner[self.host]['hostnames'][0]['name']
+            mac = ''
+            state = 'up'
+            ports = self.extract_ports('tcp') + self.extract_ports('udp')
+        
+        else:
+            hostname = ''
+            mac = ''
+            state = 'down'
+            ports = []
 
         host_report = HostReport(
             self.host,
@@ -160,6 +170,8 @@ class ScannerHandler():
                 logging.debug("Found result for host {}".format(scanner.host))
                 queue.put(report)
         else:
+            report = scanner.extract_host_report(False)
+            queue.put(report)
             logging.debug("Host not reachable")
 
     def run_scans(self):
