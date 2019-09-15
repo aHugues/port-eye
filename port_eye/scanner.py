@@ -46,7 +46,7 @@ class Scanner():
         argument = '-sn --host-timeout 10s'
         if self.is_ipv6:
             argument += ' -6'
-        self.scanner.scan(self.host, arguments=argument)
+        self.scanner.scan(self.host, arguments=argument, sudo=True)
         try:
             self.reachable = True
             logging.debug("Host {} is reachable".format(self.host))
@@ -60,17 +60,16 @@ class Scanner():
         """Check if the target is in local network."""
         return self.raw_host.is_private
 
-    def perform_scan(self, ping_skip=False):
+    def perform_scan(self, sudo=False):
         """Perform nmap scanning on selected host.
         
         # Arguments
-        # ping_skip (Bool) default False: Skip ping if they are blocked.
+        # sudo (Bool) default False: Run as privileged user.
         """
-        arguments = '-Pn' if ping_skip else '-sV'
+        arguments = '-Sv'
         if self.is_ipv6:
             arguments += ' -6'
-        self.scanner.scan(self.host, arguments=arguments, sudo=False)
-
+        self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
 
     def extract_ports(self, protocol):
         """Extract the scanned port from the host.
@@ -140,7 +139,6 @@ class ScannerHandler():
             self.scanners.append(Scanner(host, True, mock=mock))
         for block in self.cidr_blocks:
             hosts = get_hosts_from_cidr(block)
-            print(hosts)
             self.scanners += [Scanner(host, mock=mock) for host in hosts]
         
         logging.debug("Created {} scanners".format(len(self.scanners)))
@@ -154,16 +152,13 @@ class ScannerHandler():
                 logging.debug("Found result for host {}".format(scanner.host))
                 queue.put(report)
             except KeyError:
-                try:
-                    logging.debug(
-                        "No result found for host {}... Trying with -Pn".format(
-                            scanner.host))
-                    scanner.perform_scan(True)
-                    report = scanner.extract_host_report()
-                    logging.debug("Found result for host {}".format(scanner.host))
-                    queue.put(report)
-                except KeyError:
-                    logging.debug("No result for host {}".format(scanner.host))
+                logging.debug(
+                    "No result found for host {}... Trying with -Pn".format(
+                        scanner.host))
+                scanner.perform_scan(True)
+                report = scanner.extract_host_report()
+                logging.debug("Found result for host {}".format(scanner.host))
+                queue.put(report)
         else:
             logging.debug("Host not reachable")
 

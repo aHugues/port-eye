@@ -10,11 +10,11 @@ def test_ping_blocked():
     assert scanner.reachable(host) is False
 
 
-def test_ping_skipped():
+def test_ping_sudo():
     """Test detection of hosts when ping skipped."""
     host = u"82.64.28.100"
     scanner = MockPortScanner()
-    assert scanner.reachable(host, skip_ping=True) is True
+    assert scanner.reachable(host, sudo=True) is True
 
 
 def test_port_range():

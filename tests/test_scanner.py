@@ -121,14 +121,20 @@ def test_ports_scanning():
         assert expected_port in port_numbers
 
 
-def test_scanning_skip():
-    """Test scanning when necessary to skip ping."""
+def test_scanning_sudo():
+    """Test scanning when necessary to run as sudo."""
     host = ipaddress.ip_address(u'82.64.28.100')
     scanner = Scanner(host, mock=True)
 
     assert scanner.is_reachable() is True
 
+    # Run a first time without sudo
     scanner.perform_scan()
+    ports = scanner.extract_ports('tcp')
+    assert len(ports) == 0
+
+    # Run as sudo
+    scanner.perform_scan(sudo=True)
     ports = scanner.extract_ports('tcp')
 
     expected_ports = [22, 80, 443]
@@ -139,6 +145,26 @@ def test_scanning_skip():
     port_numbers = [port.port_number for port in ports]
     for expected_port in expected_ports:
         assert expected_port in port_numbers
+
+
+def test_scanner_handler_sudo():
+    """Test full scanning when necessary to run as sudo."""
+    host = ipaddress.ip_address(u'82.64.28.100')
+    
+    ipv4_hosts = [host]
+    handler = ScannerHandler(ipv4_hosts, [], [], True)
+
+    report = handler.run_scans()
+    
+    assert report.nb_hosts == 1
+    assert report.up == 1
+    assert report.results[0].hostname == 'acne.bad'
+    assert len(report.results[0].ports) == 3
+
+    ports = [port.port_number for port in report.results[0].ports]
+    expected_ports = [22, 80, 443]
+    for port in expected_ports:
+        assert port in ports
 
 
 def test_host_scanning():
