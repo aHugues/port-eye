@@ -3,8 +3,7 @@
 import click
 import ipaddress
 import logging
-from .utils import read_input_file_json
-from .utils import parse_input_file
+from .utils import read_input_file
 from .utils import build_hosts_dict
 from .scanner import Scanner, ScannerHandler
 from .export import Export
@@ -54,7 +53,12 @@ def main(targets, file, log_level, mock, output):
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
 
-    hosts_dict = build_hosts_dict(targets)
+    file_content = []
+
+    if file is not None:
+        file_content = read_input_file(file)
+
+    hosts_dict = build_hosts_dict(list(targets) + file_content)
 
     parsed_ipv4 = hosts_dict['ipv4_hosts']
     logging.debug("Found {} IPV4 from CLI.".format(len(parsed_ipv4)))
@@ -64,23 +68,6 @@ def main(targets, file, log_level, mock, output):
 
     parsed_cidr = hosts_dict['ipv4_networks']
     logging.debug("Found {} CIDR from CLI.".format(len(parsed_cidr)))
-
-    if file is not None:
-        file_extension = file.split('.')[-1]
-        if file_extension == 'json':
-            logging.debug("Reading input JSON file.")
-            content = read_input_file_json(file)
-        else:
-            content = {}
-            click.echo("Unsupported input file type", err=True)
-            ctx = click.get_current_context()
-            ctx.exit(2)
-
-        parsed_file = parse_input_file(content)
-    
-        parsed_ipv4 += parsed_file['ipv4']
-        parsed_ipv6 += parsed_file['ipv6']
-        parsed_cidr += parsed_file['cidr']
     
     if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
         logging.debug("Running for {} IPV4, {} IPV6 and {} CIDR blocks.".format(
