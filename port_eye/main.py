@@ -3,11 +3,13 @@
 import click
 import ipaddress
 import logging
-from .utils import read_input_file_json
-from .utils import parse_input_file
+from .utils import read_input_file
+from .utils import build_hosts_dict
 from .scanner import Scanner, ScannerHandler
 from .export import Export
 from .report import Report
+
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
@@ -22,22 +24,12 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     logging.info("Done.")
 
 
-@click.command()
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
-    '--ipv4', '-h4',
+    '--target', '-t', 'targets',
     multiple=True,
     type=str,
-    help="IPV4 address of host to check")
-@click.option(
-    '--ipv6', '-h6',
-    multiple=True,
-    type=str,
-    help="IPV6 address of host to check")
-@click.option(
-    '--cidr', '-c',
-    multiple=True,
-    type=str,
-    help="CIDR block of hosts to check")
+    help="Target host (IPV4, IPV6 or CIDR")
 @click.option(
     '--file', '-f',
     type=click.Path(exists=True),
@@ -55,37 +47,27 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     '--output', '-o',
     type=click.Path(exists=False), required=True,
     help="Output HTML file into which the results must be stored")
-def main(ipv4, ipv6, cidr, file, log_level, mock, output):
+def main(targets, file, log_level, mock, output):
     """Run the main application from arguments provided in the CLI."""
     # Set logging level
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
 
-    parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
-    logging.debug("Found {} IPV4 from CLI.".format(len(parsed_ipv4)))
-
-    parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
-    logging.debug("Found {} IPV6 from CLI.".format(len(parsed_ipv6)))
-
-    parsed_cidr = [ipaddress.ip_network(address) for address in cidr]
-    logging.debug("Found {} CIDR from CLI.".format(len(parsed_cidr)))
+    file_content = []
 
     if file is not None:
-        file_extension = file.split('.')[-1]
-        if file_extension == 'json':
-            logging.debug("Reading input JSON file.")
-            content = read_input_file_json(file)
-        else:
-            content = {}
-            click.echo("Unsupported input file type", err=True)
-            ctx = click.get_current_context()
-            ctx.exit(2)
+        file_content = read_input_file(file)
 
-        parsed_file = parse_input_file(content)
-    
-        parsed_ipv4 += parsed_file['ipv4']
-        parsed_ipv6 += parsed_file['ipv6']
-        parsed_cidr += parsed_file['cidr']
+    hosts_dict = build_hosts_dict(list(targets) + file_content)
+
+    parsed_ipv4 = hosts_dict['ipv4_hosts']
+    logging.debug("Found {} IPV4 from CLI.".format(len(parsed_ipv4)))
+
+    parsed_ipv6 = hosts_dict['ipv6_hosts']
+    logging.debug("Found {} IPV6 from CLI.".format(len(parsed_ipv6)))
+
+    parsed_cidr = hosts_dict['ipv4_networks']
+    logging.debug("Found {} CIDR from CLI.".format(len(parsed_cidr)))
     
     if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
         logging.debug("Running for {} IPV4, {} IPV6 and {} CIDR blocks.".format(

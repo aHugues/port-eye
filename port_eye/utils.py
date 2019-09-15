@@ -2,77 +2,96 @@
 
 import json
 import ipaddress
+import sys
 
 
-def read_input_file_json(filepath):
-    """Read the content from the provided JSON file.
 
-    # Arguments
-    filepath (str): Path of the JSON file to read.
-
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
-    """
-    with open(filepath, 'r') as json_file:
-        content = json.load(json_file)
-        return content
-
-
-def read_input_file_txt(filepath):
+def read_input_file(filepath):
     """Read the content from the provided txt file.
 
-    # Arguments
-    filepath (str): Path of the txt file to read.
+    Hosts should be put in the file on separated lines: each line contains 
+    exactly one host.
 
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
+    Parameters
+    ----------
+    filepath : str
+        Path of the txt file to read.
+
+    Returns
+    -------
+        content : dict
+            Dict object containing the hosts and cidr to be scanned.
+    
+    See Also
+    --------
+    this_is_a_test: This is a test function.
     """
-    return "Not done yet"
+    lines = []
+    with open(filepath, 'r') as inputfile:
+        lines = inputfile.readlines()
+
+    if sys.version_info[0] == 2: # pragma: no cover
+        lines = [line.decode('utf-8') for line in lines]
+
+    return [line.strip() for line in lines]
 
 
-def parse_input_file(file_content):
-    """Parse the content read from file or CLI into correct IP format.
+def build_hosts_dict(hosts):
+    """Build the list of hosts as a dict with correct IP format from list.
 
-    Read the provided dictionnary and return a dictionnary composed of
-    `ip_address` and `ip_network` objects from the `ipaddress` library. A
-    `ValueError` exception is raised when a value has not a correct ipv4/ipv6
-    or CIDR format.
+    Read the input hosts as strings and returnes corresponding types as 
+    ip_addresses or ip_networks as a dict. Invalid addresses are returned 
 
-    # Arguments
-    file_content (dict): Dict containing the hosts and cidr to be scanned.
+    ### Arguments
+    - hosts (List of str): List of hosts to be parsed
 
-    # Returns:
-    parsed_content (dict): Dict composed of parsed objects to be scanned.
+    ### Returns
+    - parsed_hosts (dict): Dict of the parsed hosts
     """
-    if 'ipv4' in file_content:
-        parsed_ipv4 = [
-            ipaddress.ip_address(host) for host in file_content['ipv4']]
-    else:
-        parsed_ipv4 = []
-    if 'ipv6' in file_content:
-        parsed_ipv6 = [
-            ipaddress.ip_address(host) for host in file_content['ipv6']]
-    else:
-        parsed_ipv6 = []
-    if 'cidr' in file_content:
-        parsed_cidr = [
-            ipaddress.ip_network(host) for host in file_content['cidr']]
-    else:
-        parsed_cidr = []
+
+    ipv4_hosts = []
+    ipv6_hosts = []
+    ipv4_networks = []
+    ipv6_networks = []
+    ignored = []
+
+    print(hosts)
+
+    for host in hosts:
+        try:
+            parsed_host = ipaddress.ip_address(host)
+            if parsed_host.__class__ == ipaddress.IPv4Address:
+                ipv4_hosts.append(parsed_host)
+            else:
+                ipv6_hosts.append(parsed_host)
+        except ValueError as e:
+            print(e)
+            try:
+                parsed_network = ipaddress.ip_network(host)
+                if parsed_network.__class__ == ipaddress.IPv4Network:
+                    ipv4_networks.append(parsed_network)
+                else:
+                    ipv6_networks.append(parsed_network)
+            except ValueError:
+                print(host)
+                ignored.append(host)
+    
     return {
-        'ipv4': parsed_ipv4,
-        'ipv6': parsed_ipv6,
-        'cidr': parsed_cidr,
+        'ipv4_hosts': ipv4_hosts,
+        'ipv6_hosts': ipv6_hosts,
+        'ipv4_networks': ipv4_networks,
+        'ipv6_networks': ipv6_networks,
+        'ignored': ignored
     }
 
 
 def parse_duration_from_seconds(raw_duration):
     """Return a string in the xxHyyMzzs format from a number of seconds.
     
-    ## Arguments
+    ### Arguments
     - raw_duration (float): Number of seconds in the duration
     
-    ## Returns
+    ### Returns
     - duration (str): String representing the full duration in H/M/s
     """
 

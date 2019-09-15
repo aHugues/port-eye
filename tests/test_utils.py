@@ -3,110 +3,10 @@
 import pytest
 from ipaddress import IPv4Address, IPv6Address, IPv4Network, ip_network
 
-from port_eye.utils import read_input_file_json
-from port_eye.utils import read_input_file_txt
-from port_eye.utils import parse_input_file
+from port_eye.utils import read_input_file
 from port_eye.utils import parse_duration_from_seconds
 from port_eye.utils import get_hosts_from_cidr
-
-
-def test_reading_json_file():
-    """Test reading an input JSON file."""
-    content = read_input_file_json("tests/json_test.json")
-    assert 'ipv4' in content
-    assert 'cidr' in content
-    assert 'ipv6' in content
-    assert 'ipv8' not in content
-
-
-def test_reading_json_file_errored():
-    """Test reading an input JSON file even with incorrect data format."""
-    content = read_input_file_json("tests/json_test_error.json")
-    assert 'ipv4' in content
-    assert 'cidr' in content
-    assert 'ipv6' in content
-    assert 'ipv8' not in content
-
-
-def test_reading_txt_file():
-    """NOT YET IMPLEMENTED, test reading an input TXT file."""
-    content = read_input_file_txt("fake_filepath")
-    assert content == "Not done yet"
-
-
-def test_parsing_with_error():
-    """Test that format error are caught when parsing."""
-    content = read_input_file_json("tests/json_test_error.json")
-    with pytest.raises(ValueError):
-        parse_input_file(content)
-
-
-def test_correct_parsing_normal():
-    """Test that content are correctly parsed."""
-    content = read_input_file_json("tests/json_test.json")
-    parsed_content = parse_input_file(content)
-
-    # Test that all content is present
-    assert "ipv4" in parsed_content
-    assert "ipv6" in parsed_content
-    assert "cidr" in parsed_content
-
-    # Test that the elements in dict have the correct format
-    for host in parsed_content["ipv4"]:
-        assert type(host) == IPv4Address
-    for host in parsed_content["ipv6"]:
-        assert type(host) == IPv6Address
-    for network in parsed_content["cidr"]:
-        assert type(network) == IPv4Network
-
-
-def test_file_parsing_no_ipv4():
-    """Test that content is parsed when no IPV4 is present."""
-    content = read_input_file_json("tests/json_test.json")
-    new_content = {
-        'ipv6': content['ipv6'],
-        'cidr': content['cidr']
-    }
-
-    parsed_content = parse_input_file(new_content)
-
-    assert parsed_content["ipv4"] == []
-    for host in parsed_content["ipv6"]:
-        assert type(host) == IPv6Address
-    for network in parsed_content["cidr"]:
-        assert type(network) == IPv4Network
-
-
-def test_file_parsing_no_ipv6():
-    """Test that content is parsed when no IPV6 is present."""
-    content = read_input_file_json("tests/json_test.json")
-    new_content = {
-        'ipv4': content['ipv4'],
-        'cidr': content['cidr']
-    }
-
-    parsed_content = parse_input_file(new_content)
-    assert parsed_content["ipv6"] == []
-    for host in parsed_content["ipv4"]:
-        assert type(host) == IPv4Address
-    for network in parsed_content["cidr"]:
-        assert type(network) == IPv4Network
-
-
-def test_file_parsing_no_cidr():
-    """Test that content is parsed when no CIDR block is present."""
-    content = read_input_file_json("tests/json_test.json")
-    new_content = {
-        'ipv4': content['ipv4'],
-        'ipv6': content['ipv6']
-    }
-
-    parsed_content = parse_input_file(new_content)
-    assert parsed_content["cidr"] == []
-    for host in parsed_content["ipv4"]:
-        assert type(host) == IPv4Address
-    for network in parsed_content["ipv6"]:
-        assert type(network) == IPv6Address
+from port_eye.utils import build_hosts_dict
 
 
 def test_duration_parsing():
@@ -143,4 +43,42 @@ def test_hosts_from_cidr():
     assert len(hosts) == 254
     assert str(hosts[0]) == "192.168.0.1"
     assert str(hosts[-1]) == "192.168.0.254"
+
+
+def test_parsing_list_hosts():
+    """Test getting hosts from a simple list."""
+
+    ipv4 = [
+        u'192.168.0.4',
+        u'127.0.0.1',
+        u'88.222.10.4'
+    ]
+
+    ipv6 = [
+        u'2a01:e0a:129:5ed0:211:32ff:fe2d:68da',
+        u'::1'
+    ]
+
+    ipv4_net = [
+        u'192.168.0.0/20'
+    ]
+
+    ipv6_net = [
+        u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120"
+    ]
+
+    invalid = [
+        u'toto',
+        u'265.444.22.3'
+    ]
+
+    hosts = ipv4 + ipv6 + ipv4_net + ipv6_net + invalid 
+
+    result = build_hosts_dict(hosts)
+
+    assert len(result['ipv4_hosts']) == 3
+    assert len(result['ipv6_hosts']) == 2
+    assert len(result['ipv4_networks']) == 1
+    assert len(result['ipv6_networks']) == 1
+    assert len(result['ignored']) == 2
 
