@@ -7,11 +7,15 @@ import ipaddress
 def read_input_file_json(filepath):
     """Read the content from the provided JSON file.
 
-    # Arguments
-    filepath (str): Path of the JSON file to read.
+    Parameters
+    ----------
+        filepath : str
+            Path of the JSON file to read.
 
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
+    Returns
+    -------
+        content : dict
+            Dict object containing the hosts and cidr to be scanned.
     """
     with open(filepath, 'r') as json_file:
         content = json.load(json_file)
@@ -21,11 +25,19 @@ def read_input_file_json(filepath):
 def read_input_file_txt(filepath):
     """Read the content from the provided txt file.
 
-    # Arguments
-    filepath (str): Path of the txt file to read.
+    Parameters
+    ----------
+    filepath : str
+        Path of the txt file to read.
 
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
+    Returns
+    -------
+        content : dict
+            Dict object containing the hosts and cidr to be scanned.
+    
+    See Also
+    --------
+    this_is_a_test: This is a test function.
     """
     return "Not done yet"
 
@@ -38,11 +50,19 @@ def parse_input_file(file_content):
     `ValueError` exception is raised when a value has not a correct ipv4/ipv6
     or CIDR format.
 
-    # Arguments
-    file_content (dict): Dict containing the hosts and cidr to be scanned.
+    Parameters
+    ---------
+        file_content : dict
+            Dict containing the hosts and cidr to be scanned.
 
-    # Returns:
-    parsed_content (dict): Dict composed of parsed objects to be scanned.
+    Returns
+    -------
+        parsed_content : dict
+            Dict composed of parsed objects to be scanned.
+    
+    See Also
+    --------
+        this_is_a_test: This is a test function
     """
     if 'ipv4' in file_content:
         parsed_ipv4 = [
@@ -66,13 +86,58 @@ def parse_input_file(file_content):
     }
 
 
+def build_hosts_dict(hosts):
+    """Build the list of hosts as a dict with correct IP format from list.
+
+    Read the input hosts as strings and returnes corresponding types as 
+    ip_addresses or ip_networks as a dict. Invalid addresses are returned 
+
+    ### Arguments
+    - hosts (List of str): List of hosts to be parsed
+
+    ### Returns
+    - parsed_hosts (dict): Dict of the parsed hosts
+    """
+
+    ipv4_hosts = []
+    ipv6_hosts = []
+    ipv4_networks = []
+    ipv6_networks = []
+    ignored = []
+
+    for host in hosts:
+        try:
+            parsed_host = ipaddress.ip_address(host)
+            if parsed_host.__class__ == ipaddress.IPv4Address:
+                ipv4_hosts.append(parsed_host)
+            else:
+                ipv6_hosts.append(parsed_host)
+        except ValueError:
+            try:
+                parsed_network = ipaddress.ip_network(host)
+                if parsed_network.__class__ == ipaddress.IPv4Network:
+                    ipv4_networks.append(parsed_network)
+                else:
+                    ipv6_networks.append(parsed_network)
+            except ValueError:
+                ignored.append(host)
+    
+    return {
+        'ipv4_hosts': ipv4_hosts,
+        'ipv6_hosts': ipv6_hosts,
+        'ipv4_networks': ipv4_networks,
+        'ipv6_networks': ipv6_networks,
+        'ignored': ignored
+    }
+
+
 def parse_duration_from_seconds(raw_duration):
     """Return a string in the xxHyyMzzs format from a number of seconds.
     
-    ## Arguments
+    ### Arguments
     - raw_duration (float): Number of seconds in the duration
     
-    ## Returns
+    ### Returns
     - duration (str): String representing the full duration in H/M/s
     """
 

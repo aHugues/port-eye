@@ -8,6 +8,7 @@ from port_eye.utils import read_input_file_txt
 from port_eye.utils import parse_input_file
 from port_eye.utils import parse_duration_from_seconds
 from port_eye.utils import get_hosts_from_cidr
+from port_eye.utils import build_hosts_dict
 
 
 def test_reading_json_file():
@@ -143,4 +144,42 @@ def test_hosts_from_cidr():
     assert len(hosts) == 254
     assert str(hosts[0]) == "192.168.0.1"
     assert str(hosts[-1]) == "192.168.0.254"
+
+
+def test_parsing_list_hosts():
+    """Test getting hosts from a simple list."""
+
+    ipv4 = [
+        u'192.168.0.4',
+        u'127.0.0.1',
+        u'88.222.10.4'
+    ]
+
+    ipv6 = [
+        u'2a01:e0a:129:5ed0:211:32ff:fe2d:68da',
+        u'::1'
+    ]
+
+    ipv4_net = [
+        u'192.168.0.0/20'
+    ]
+
+    ipv6_net = [
+        u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120"
+    ]
+
+    invalid = [
+        'toto',
+        '265.444.22.3'
+    ]
+
+    hosts = ipv4 + ipv6 + ipv4_net + ipv6_net + invalid 
+
+    result = build_hosts_dict(hosts)
+
+    assert len(result['ipv4_hosts']) == 3
+    assert len(result['ipv6_hosts']) == 2
+    assert len(result['ipv4_networks']) == 1
+    assert len(result['ipv6_networks']) == 1
+    assert len(result['ignored']) == 2
 
