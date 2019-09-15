@@ -12,11 +12,14 @@ from .report import Report
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
+def run_scans(
+    output, ipv4_hosts, ipv6_hosts, 
+    ipv4_networks, ipv6_networks, mock=False
+    ):
     """Run scans for all the hosts."""
 
     logging.info("Starting scans")
-    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks, mock=mock)
+    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=mock)
     report = handler.run_scans()
     logging.info("Scans completed, starting exporting...")
     export = Export()
@@ -61,19 +64,15 @@ def main(targets, file, log_level, mock, output):
     hosts_dict = build_hosts_dict(list(targets) + file_content)
 
     parsed_ipv4 = hosts_dict['ipv4_hosts']
-    logging.debug("Found {} IPV4 from CLI.".format(len(parsed_ipv4)))
-
     parsed_ipv6 = hosts_dict['ipv6_hosts']
-    logging.debug("Found {} IPV6 from CLI.".format(len(parsed_ipv6)))
-
-    parsed_cidr = hosts_dict['ipv4_networks']
-    logging.debug("Found {} CIDR from CLI.".format(len(parsed_cidr)))
+    parsed_ipv4_networks = hosts_dict['ipv4_networks']
+    parsed_ipv6_networks = hosts_dict['ipv6_networks']
     
-    if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
-        logging.debug("Running for {} IPV4, {} IPV6 and {} CIDR blocks.".format(
-            len(parsed_ipv4), len(parsed_ipv6), len(parsed_cidr)
-        ))
-        run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr, mock)
+    if len(parsed_ipv4 + parsed_ipv6 + parsed_ipv4_networks + \
+        parsed_ipv6_networks) > 0:
+            run_scans(
+                output, parsed_ipv4, parsed_ipv6,
+                parsed_ipv4_networks, parsed_ipv6_networks, mock)
     else:
         logging.debug("No input host found, exiting with help.")
         ctx = click.get_current_context()

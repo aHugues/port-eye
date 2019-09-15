@@ -152,7 +152,7 @@ def test_scanner_handler_sudo():
     host = ipaddress.ip_address(u'82.64.28.100')
     
     ipv4_hosts = [host]
-    handler = ScannerHandler(ipv4_hosts, [], [], True)
+    handler = ScannerHandler(ipv4_hosts, [], [], [], True)
 
     report = handler.run_scans()
     
@@ -217,25 +217,31 @@ def test_scanner_handler_creation():
     ipv6_hosts = [
         ipaddress.ip_address(u"::1")
     ]
-    cidr_blocks = [
+    ipv4_networks = [
         ipaddress.ip_network(u"192.168.0.0/30")
+    ]
+    ipv6_networks = [
+        ipaddress.ip_network(u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120")
     ]
 
     scanner_handler = ScannerHandler(
-        ipv4_hosts, ipv6_hosts, cidr_blocks, mock=True)
+        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=True)
 
     assert len(scanner_handler.ipv4_hosts) == 2
     assert len(scanner_handler.ipv6_hosts) == 1
-    assert len(scanner_handler.cidr_blocks) == 1
+    assert len(scanner_handler.ipv4_networks) == 1
+    assert len(scanner_handler.ipv6_networks) == 1
 
     for host in scanner_handler.ipv4_hosts:
         assert host.__class__ == ipaddress.IPv4Address
     for host in scanner_handler.ipv6_hosts:
         assert host.__class__ == ipaddress.IPv6Address
-    for host in scanner_handler.cidr_blocks:
+    for host in scanner_handler.ipv4_networks:
         assert host.__class__ == ipaddress.IPv4Network
+    for host in scanner_handler.ipv6_networks:
+        assert host.__class__ == ipaddress.IPv6Network
     
-    assert len(scanner_handler.scanners) == 5
+    assert len(scanner_handler.scanners) == 260
     for scanner in scanner_handler.scanners:
         assert scanner.__class__ == Scanner
 
@@ -246,7 +252,7 @@ def test_scan_handling():
         ipaddress.ip_address(u"127.0.0.1"),
         ipaddress.ip_address(u"192.0.2.1")
     ]
-    scanner_handler = ScannerHandler(ipv4_hosts, [], [], mock=True)
+    scanner_handler = ScannerHandler(ipv4_hosts, [], [], [], mock=True)
     hosts_queue = Queue()
 
     scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue)
@@ -264,7 +270,7 @@ def test_running_scans():
         # ipaddress.ip_address(u"::1")
     # ]
 
-    scanner_handler = ScannerHandler(ipv4_hosts, [], [], mock=True)
+    scanner_handler = ScannerHandler(ipv4_hosts, [], [], [], mock=True)
     report = scanner_handler.run_scans()
 
     assert report.__class__ == Report
