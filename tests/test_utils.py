@@ -169,8 +169,8 @@ def test_parsing_list_hosts():
     ]
 
     invalid = [
-        'toto',
-        '265.444.22.3'
+        u'toto',
+        u'265.444.22.3'
     ]
 
     hosts = ipv4 + ipv6 + ipv4_net + ipv6_net + invalid 
