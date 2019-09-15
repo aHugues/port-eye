@@ -16,7 +16,7 @@ class MockPortScanner():
         """Return a host detail."""
         if sys.version_info[0]==2: # pragma: no cover
             assert type(host) in (str, unicode), 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
-        else:
+        else: # pragma: no cover
             assert type(host) is str, 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
         return self._scan_result['scan'][host]
 
@@ -53,11 +53,11 @@ class MockPortScanner():
             }
         }
     
-    def reachable(self, host, skip_ping=False):
+    def reachable(self, host, sudo=False):
         """Test if the host should be reachable.
 
         :param host: host to test
-        :param skip_ping: bool for skipping ping (default to False)
+        :param sudo: bool for running as privileged user
         
         :returns reachable as bool
         """
@@ -67,12 +67,12 @@ class MockPortScanner():
             '92.222.10.88',
             '2a01:e0a:129:5ed0:211:32ff:fe2d:68da'
         ]
-        reachable_skip = [
+        reachable_sudo = [
             '82.64.28.100'
         ]
 
-        if skip_ping:
-            return host in (reachable_full + reachable_skip)
+        if sudo:
+            return host in (reachable_full + reachable_sudo)
         else:
             return host in reachable_full
     
@@ -142,7 +142,8 @@ class MockPortScanner():
         }
         return hostnames[host]
     
-    def build_result_ipv4(self, host, ports, skip_ping=False, ipv='ipv4'):
+    def build_result_ipv4(
+        self, host, ports, skip_ping=False, ipv='ipv4', sudo=False):
         """Build the returned dict for ipv4 hosts
 
         If the skip_ping argument is set to True, results are sure to be 
@@ -152,6 +153,7 @@ class MockPortScanner():
         :param ports: list of ports to scan (must be in range (22, 80, 443))
         :param skip_ping: bool for skipping ping (default to False)
         :param ipv: str indicating qui IPversion is used (default ipv4)
+        :param sudo: bool to run as privileged user
 
         :returns: scan_result as dictionnary
         """
@@ -224,7 +226,7 @@ class MockPortScanner():
             assert type(hosts) in (str, unicode), 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
             assert type(ports) in (str, unicode, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) in (str, unicode), 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
-        else:
+        else: # pragma: no cover
             assert type(hosts) is str, 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
             assert type(ports) in (str, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
             assert type(arguments) is str, 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
@@ -235,7 +237,7 @@ class MockPortScanner():
 
         ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
         
-        if self.reachable(hosts, skip_ping):
+        if self.reachable(hosts, sudo):
             result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv)
         else:
             result = self.build_result_unreachable(hosts, skip_ping)

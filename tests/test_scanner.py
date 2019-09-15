@@ -121,6 +121,52 @@ def test_ports_scanning():
         assert expected_port in port_numbers
 
 
+def test_scanning_sudo():
+    """Test scanning when necessary to run as sudo."""
+    host = ipaddress.ip_address(u'82.64.28.100')
+    scanner = Scanner(host, mock=True)
+
+    assert scanner.is_reachable() is True
+
+    # Run a first time without sudo
+    scanner.perform_scan()
+    ports = scanner.extract_ports('tcp')
+    assert len(ports) == 0
+
+    # Run as sudo
+    scanner.perform_scan(sudo=True)
+    ports = scanner.extract_ports('tcp')
+
+    expected_ports = [22, 80, 443]
+    assert len(ports) >= 3
+    for port in ports:
+        assert port.__class__ == PortReport
+    
+    port_numbers = [port.port_number for port in ports]
+    for expected_port in expected_ports:
+        assert expected_port in port_numbers
+
+
+def test_scanner_handler_sudo():
+    """Test full scanning when necessary to run as sudo."""
+    host = ipaddress.ip_address(u'82.64.28.100')
+    
+    ipv4_hosts = [host]
+    handler = ScannerHandler(ipv4_hosts, [], [], True)
+
+    report = handler.run_scans()
+    
+    assert report.nb_hosts == 1
+    assert report.up == 1
+    assert report.results[0].hostname == 'acne.bad'
+    assert len(report.results[0].ports) == 3
+
+    ports = [port.port_number for port in report.results[0].ports]
+    expected_ports = [22, 80, 443]
+    for port in expected_ports:
+        assert port in ports
+
+
 def test_host_scanning():
     """Test the report extraction from a complete host."""
 
@@ -172,7 +218,7 @@ def test_scanner_handler_creation():
         ipaddress.ip_address(u"::1")
     ]
     cidr_blocks = [
-        ipaddress.ip_network(u"192.168.0.1/32")
+        ipaddress.ip_network(u"192.168.0.0/30")
     ]
 
     scanner_handler = ScannerHandler(
@@ -189,7 +235,7 @@ def test_scanner_handler_creation():
     for host in scanner_handler.cidr_blocks:
         assert host.__class__ == ipaddress.IPv4Network
     
-    assert len(scanner_handler.scanners) == 4
+    assert len(scanner_handler.scanners) == 5
     for scanner in scanner_handler.scanners:
         assert scanner.__class__ == Scanner
 
