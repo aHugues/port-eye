@@ -63,6 +63,7 @@
         <div class="detailed-info-wrapper">
 
             {% for host in report.results %}
+            {% if host.state == "up" %}
             <div class="detail-host-wrapper">
                 <h4 status="host-ip">{{ host.ip }}</h4>
                 <div class="detail-host-content">
@@ -124,6 +125,7 @@
                     </table>
                 </div>
             </div>
+            {% endif %}
             {% endfor %}
 
 

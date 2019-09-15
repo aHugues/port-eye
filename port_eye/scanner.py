@@ -172,6 +172,7 @@ class ScannerHandler():
         else:
             report = scanner.extract_host_report(False)
             queue.put(report)
+            print(report)
             logging.debug("Host not reachable")
 
     def run_scans(self):
