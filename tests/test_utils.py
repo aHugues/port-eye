@@ -1,12 +1,13 @@
 """Test functions from the utils module."""
 
 import pytest
-from ipaddress import IPv4Address, IPv6Address, IPv4Network
+from ipaddress import IPv4Address, IPv6Address, IPv4Network, ip_network
 
 from port_eye.utils import read_input_file_json
 from port_eye.utils import read_input_file_txt
 from port_eye.utils import parse_input_file
 from port_eye.utils import parse_duration_from_seconds
+from port_eye.utils import get_hosts_from_cidr
 
 
 def test_reading_json_file():
@@ -128,4 +129,18 @@ def test_duration_parsing():
     assert parse_duration_from_seconds(3784) == "1h3m4s"
     assert parse_duration_from_seconds(3642) == "1h0m42s"
 
+
+def test_hosts_from_cidr():
+    """Test getting list of hosts from a cidr block."""
+
+    block = ip_network(u'192.168.0.0/24')
+
+    hosts = get_hosts_from_cidr(block)
+
+    for host in hosts:
+        assert host.__class__ == IPv4Address
+    
+    assert len(hosts) == 254
+    assert str(hosts[0]) == "192.168.0.1"
+    assert str(hosts[-1]) == "192.168.0.254"
 
