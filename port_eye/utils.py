@@ -3,6 +3,7 @@
 import json
 import ipaddress
 import sys
+import re
 
 
 
@@ -121,3 +122,54 @@ def get_hosts_from_cidr(cidr_block):
     hosts (List of IPV4Hosts): List of hosts in the network.
     """
     return list(cidr_block.hosts())
+
+
+def parse_vuln_report(raw_report, service):
+    """Parse a vuln report as raw string into a usable format.
+
+    Parameters
+    ----------
+    raw_report : str
+        Raw report from nmap
+    
+    Returns
+    -------
+    parsed_report : List of dicts
+        Parsed report as dicts
+    valid : bool
+        Does the string correspond to a vulnerability
+    """
+
+    # Check if value corresponds to an error
+    error_messages = [
+        "No reply from server (TIMEOUT)",
+        "ERROR:",
+        "Script execution failed"
+    ]
+
+    for error_message in error_messages:
+        if error_message in raw_report or len(raw_report) < 5:
+            return ([], False)
+    
+    # If result is valid, parse into the correct format.
+    vulns = []
+
+    cve_regex = r"CVE:(CVE-\d{4}-\d{4})"
+    names_regex = r"VULNERABLE:\n(.+)"
+    cves = re.findall(cve_regex, raw_report)
+    names = re.findall(names_regex, raw_report)
+
+    for i in range(len(cves)):
+        cve = cves[i].strip()
+        link = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(
+            cve
+        )
+        name = names[i].strip()
+        vulns.append({
+            'service': service,
+            'CVE': cve,
+            'description': name,
+            'link': link
+        })
+    
+    return (vulns, True)
