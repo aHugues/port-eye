@@ -137,19 +137,27 @@ class Scanner():
 
 class ScannerHandler():
 
-    def __init__(self, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
+    def __init__(
+        self, ipv4_hosts, ipv6_hosts,
+        ipv4_networks, ipv6_networks, mock=False
+        ):
+
         self.ipv4_hosts = ipv4_hosts
         self.ipv6_hosts = ipv6_hosts
-        self.cidr_blocks = cidr_blocks
+        self.ipv4_networks = ipv4_networks
+        self.ipv6_networks = ipv6_networks
 
         self.scanners = []
         for host in self.ipv4_hosts:
             self.scanners.append(Scanner(host, mock=mock))
         for host in self.ipv6_hosts:
             self.scanners.append(Scanner(host, True, mock=mock))
-        for block in self.cidr_blocks:
+        for block in self.ipv4_networks:
             hosts = get_hosts_from_cidr(block)
             self.scanners += [Scanner(host, mock=mock) for host in hosts]
+        for block in self.ipv6_networks:
+            hosts = get_hosts_from_cidr(block)
+            self.scanners += [Scanner(host, True, mock=mock) for host in hosts]
         
         logging.debug("Created {} scanners".format(len(self.scanners)))
     
