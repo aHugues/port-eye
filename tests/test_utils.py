@@ -16,7 +16,7 @@ def test_duration_parsing():
     # Test that a negative value is correctly caught
     with pytest.raises(ValueError):
         parse_duration_from_seconds(-2)
-    
+
     # Test values lower than a minute
     assert parse_duration_from_seconds(0) == "0s"
     assert parse_duration_from_seconds(42) == "42s"
@@ -34,13 +34,13 @@ def test_duration_parsing():
 def test_hosts_from_cidr():
     """Test getting list of hosts from a cidr block."""
 
-    block = ip_network(u'192.168.0.0/24')
+    block = ip_network(u"192.168.0.0/24")
 
     hosts = get_hosts_from_cidr(block)
 
     for host in hosts:
         assert host.__class__ == IPv4Address
-    
+
     assert len(hosts) == 254
     assert str(hosts[0]) == "192.168.0.1"
     assert str(hosts[-1]) == "192.168.0.254"
@@ -49,45 +49,31 @@ def test_hosts_from_cidr():
 def test_parsing_list_hosts():
     """Test getting hosts from a simple list."""
 
-    ipv4 = [
-        u'192.168.0.4',
-        u'127.0.0.1',
-        u'88.222.10.4'
-    ]
+    ipv4 = [u"192.168.0.4", u"127.0.0.1", u"88.222.10.4"]
 
-    ipv6 = [
-        u'2a01:e0a:129:5ed0:211:32ff:fe2d:68da',
-        u'::1'
-    ]
+    ipv6 = [u"2a01:e0a:129:5ed0:211:32ff:fe2d:68da", u"::1"]
 
-    ipv4_net = [
-        u'192.168.0.0/20'
-    ]
+    ipv4_net = [u"192.168.0.0/20"]
 
-    ipv6_net = [
-        u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120"
-    ]
+    ipv6_net = [u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120"]
 
-    invalid = [
-        u'toto',
-        u'265.444.22.3'
-    ]
+    invalid = [u"toto", u"265.444.22.3"]
 
-    hosts = ipv4 + ipv6 + ipv4_net + ipv6_net + invalid 
+    hosts = ipv4 + ipv6 + ipv4_net + ipv6_net + invalid
 
     result = build_hosts_dict(hosts)
 
-    assert len(result['ipv4_hosts']) == 3
-    assert len(result['ipv6_hosts']) == 2
-    assert len(result['ipv4_networks']) == 1
-    assert len(result['ipv6_networks']) == 1
-    assert len(result['ignored']) == 2
+    assert len(result["ipv4_hosts"]) == 3
+    assert len(result["ipv6_hosts"]) == 2
+    assert len(result["ipv4_networks"]) == 1
+    assert len(result["ipv6_networks"]) == 1
+    assert len(result["ignored"]) == 2
 
 
 def test_parsing_vuln_report():
     """Test parsing of vuln report from scripts."""
 
-    script1 = 'ERROR: Script execution failed (use -d to debug)'
+    script1 = "ERROR: Script execution failed (use -d to debug)"
     script2 = (
         "\n  VULNERABLE:\n  Slowloris DOS attack\n    State: LIKELY "
         "VULNERABLE\n    IDs:  CVE:CVE-2007-6750\n      Slowloris tries to "
@@ -105,7 +91,7 @@ def test_parsing_vuln_report():
 
     invalid_scripts = [script1, script3, script4]
 
-    service = 'http-server'
+    service = "http-server"
 
     for script in invalid_scripts:
         report, valid = parse_vuln_report(script, service)
@@ -116,8 +102,10 @@ def test_parsing_vuln_report():
     assert len(report2) == 1
     assert valid2 is True
     assert report2[0].__class__ == dict
-    assert report2[0]['service'] == service
-    assert report2[0]['CVE'] == "CVE-2007-6750"
-    assert report2[0]['description'] == "Slowloris DOS attack"
-    assert report2[0]['link'] == \
-        "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"
+    assert report2[0]["service"] == service
+    assert report2[0]["CVE"] == "CVE-2007-6750"
+    assert report2[0]["description"] == "Slowloris DOS attack"
+    assert (
+        report2[0]["link"]
+        == "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"
+    )
