@@ -1,4 +1,39 @@
-"""Entrypoint for the application."""
+"""
+main.py - 2019.09.17.
+
+This is the entrypoint for the entire tool. When calling the `port-eye`
+executable from the CLI, the method `main` from this file is called with
+corresponding arguments and options.
+
+Author:
+    Aurélien Hugues - me@aurelienhugues.com
+
+License:
+    MIT
+
+MIT License
+
+Copyright (c) 2019 Aurélien Hugues
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
 
 import click
 import ipaddress
@@ -9,14 +44,26 @@ from .scanner import Scanner, ScannerHandler
 from .export import Export
 from .report import Report
 
+# Allow using the -h argument to call the help function
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 def run_scans(
     output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
 ):
-    """Run scans for all the hosts."""
+    """Run scans for all the hosts and save the output as HTML.
 
+    Args:
+        output: String representing the path of the file into which report
+            should be saved.
+        ipv4_hosts: List of IPV4 hosts as IPV4Host objects.
+        ipv6_hosts: List of IPV6 hosts as IPV6Host objects.
+        ipv4_networks: List of IPV4 networks as IPV4Network objects.
+        ipv6_networks: List of IPV6 networks as IPV6Network objects.
+        mock: Boolean to use the mock nmap API. When True, a fake nmap API is
+            used for testing purposes. Default to False.
+
+    """
     logging.info("Starting scans")
     handler = ScannerHandler(
         ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=mock
