@@ -10,7 +10,8 @@ def test_main():
     result = runner.invoke(main, ["--help"])
     assert result.exit_code == 0
     assert (
-        "Run the main application from arguments provided in the CLI." in result.output
+        "Run the main application from arguments provided in the CLI."
+        in result.output
     )
     assert "--help" in result.output
 
@@ -43,6 +44,7 @@ def test_no_input():
     result = runner.invoke(main, ["-o", "tests/file_test.html"])
     assert result.exit_code == 0
     assert (
-        "Run the main application from arguments provided in the CLI." in result.output
+        "Run the main application from arguments provided in the CLI."
+        in result.output
     )
     assert "--help" in result.output

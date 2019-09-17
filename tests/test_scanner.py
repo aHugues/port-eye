@@ -69,7 +69,9 @@ def test_reachable():
 
 def test_reachable_ipv6():
     """Check the detection of reachable hosts while IPV6."""
-    reachable_host = ipaddress.ip_address(u"2a01:e0a:129:5ed0:211:32ff:fe2d:68da")
+    reachable_host = ipaddress.ip_address(
+        u"2a01:e0a:129:5ed0:211:32ff:fe2d:68da"
+    )
     scanner = Scanner(reachable_host, True, mock=True)
     assert scanner.is_reachable() is True
 

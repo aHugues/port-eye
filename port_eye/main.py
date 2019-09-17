@@ -12,7 +12,9 @@ from .report import Report
 CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
-def run_scans(output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False):
+def run_scans(
+    output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
+):
     """Run scans for all the hosts."""
 
     logging.info("Starting scans")
@@ -50,7 +52,10 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock
     help="Select logging level in the terminal",
 )
 @click.option(
-    "--mock", "-m", is_flag=True, help="Use mock API instead of really running nmap"
+    "--mock",
+    "-m",
+    is_flag=True,
+    help="Use mock API instead of really running nmap",
 )
 @click.option(
     "--output",
@@ -77,7 +82,15 @@ def main(targets, file, log_level, mock, output):
     parsed_ipv4_networks = hosts_dict["ipv4_networks"]
     parsed_ipv6_networks = hosts_dict["ipv6_networks"]
 
-    if len(parsed_ipv4 + parsed_ipv6 + parsed_ipv4_networks + parsed_ipv6_networks) > 0:
+    if (
+        len(
+            parsed_ipv4
+            + parsed_ipv6
+            + parsed_ipv4_networks
+            + parsed_ipv6_networks
+        )
+        > 0
+    ):
         run_scans(
             output,
             parsed_ipv4,

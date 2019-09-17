@@ -21,7 +21,9 @@ def test_create_port_report():
     vulnerability2 = Vulnerability("ftp", "CVE-69420", "Sample CVE 2", "yes")
     vulnerabilities = [vulnerability1, vulnerability2]
 
-    port_report = PortReport(22, "up", True, False, "ftp", "2.43.21", vulnerabilities)
+    port_report = PortReport(
+        22, "up", True, False, "ftp", "2.43.21", vulnerabilities
+    )
 
     assert port_report.port_number == 22
     assert port_report.state == "up"
@@ -42,8 +44,12 @@ def test_create_host_report():
     vulnerabilities1 = [vulnerability1, vulnerability2]
     vulnerabilities2 = [vulnerability3]
 
-    port_report1 = PortReport(22, "up", True, False, "ftp", "2.43.21", vulnerabilities1)
-    port_report2 = PortReport(80, "up", True, False, "http", "1.0", vulnerabilities2)
+    port_report1 = PortReport(
+        22, "up", True, False, "ftp", "2.43.21", vulnerabilities1
+    )
+    port_report2 = PortReport(
+        80, "up", True, False, "http", "1.0", vulnerabilities2
+    )
 
     ports_report = [port_report1, port_report2]
 
@@ -79,8 +85,12 @@ def test_create_report():
     vulnerabilities1 = [vulnerability1, vulnerability2]
     vulnerabilities2 = [vulnerability3]
 
-    port_report1 = PortReport(22, "up", True, False, "ftp", "2.43.21", vulnerabilities1)
-    port_report2 = PortReport(80, "up", True, False, "http", "1.0", vulnerabilities2)
+    port_report1 = PortReport(
+        22, "up", True, False, "ftp", "2.43.21", vulnerabilities1
+    )
+    port_report2 = PortReport(
+        80, "up", True, False, "http", "1.0", vulnerabilities2
+    )
 
     ports_report1 = [port_report1, port_report2]
 
@@ -103,8 +113,12 @@ def test_create_report():
     vulnerabilities3 = [vulnerability4]
     vulnerabilities4 = [vulnerability5, vulnerability6]
 
-    port_report3 = PortReport(22, "up", True, False, "ftp", "2.43.21", vulnerabilities3)
-    port_report4 = PortReport(80, "up", True, False, "http", "1.0", vulnerabilities4)
+    port_report3 = PortReport(
+        22, "up", True, False, "ftp", "2.43.21", vulnerabilities3
+    )
+    port_report4 = PortReport(
+        80, "up", True, False, "http", "1.0", vulnerabilities4
+    )
 
     ports_report2 = [port_report3, port_report4]
 
@@ -119,7 +133,9 @@ def test_create_report():
         "100",
     )
 
-    host_report3 = HostReport("192.168.0.5", "hostname3", "", "down", None, 12, "", "")
+    host_report3 = HostReport(
+        "192.168.0.5", "hostname3", "", "down", None, 12, "", ""
+    )
 
     report = Report(42, [host_report1, host_report2, host_report3])
 

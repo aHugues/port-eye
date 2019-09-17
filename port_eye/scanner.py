@@ -83,7 +83,9 @@ class Scanner:
             scripts_results = self.scanner[self.host]
             for port in scripts_results["tcp"]:
                 vulns_report = scripts_results["tcp"][port]["script"]
-                raw_vulnerabilities = [vulns_report[key] for key in vulns_report]
+                raw_vulnerabilities = [
+                    vulns_report[key] for key in vulns_report
+                ]
                 vulnerabilities = []
                 (vulnerabilities_dict, vulnerable) = parse_vuln_reports(
                     raw_vulnerabilities, scripts_results["tcp"][port]["product"]
@@ -243,7 +245,9 @@ class ScannerHandler:
         logging.debug("Starting scans")
 
         for scanner in self.scanners:
-            worker = threading.Thread(target=self.run_scan, args=(scanner, hosts_queue))
+            worker = threading.Thread(
+                target=self.run_scan, args=(scanner, hosts_queue)
+            )
             threads.append(worker)
             worker.start()
 

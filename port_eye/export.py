@@ -11,7 +11,9 @@ class Export:
         loader1 = PackageLoader("port_eye", "templates")
         loader2 = FileSystemLoader("./templates/", "port_eye/templates/")
         loader = ChoiceLoader([loader1, loader2])
-        self.env = Environment(loader=loader, autoescape=select_autoescape(["html"]))
+        self.env = Environment(
+            loader=loader, autoescape=select_autoescape(["html"])
+        )
         self.template = self.env.get_template("export.html.j2")
 
     def load_style(self):
@@ -32,5 +34,7 @@ class Export:
 
         with open(path, "w") as outfile:
             outfile.write(
-                self.template.render(style=style, report=report, date=today_date)
+                self.template.render(
+                    style=style, report=report, date=today_date
+                )
             )

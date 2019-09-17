@@ -19,14 +19,20 @@ class MockPortScanner:
             assert type(host) in (
                 str,
                 unicode,
-            ), "Wrong type for [host], should be a string [was {0}]".format(type(host))
+            ), "Wrong type for [host], should be a string [was {0}]".format(
+                type(host)
+            )
         else:  # pragma: no cover
             assert (
                 type(host) is str
-            ), "Wrong type for [host], should be a string [was {0}]".format(type(host))
+            ), "Wrong type for [host], should be a string [was {0}]".format(
+                type(host)
+            )
         return self._scan_result["scan"][host]
 
-    def build_global_test_info(self, host, skip_ping=False, ipv6=False, reachable=True):
+    def build_global_test_info(
+        self, host, skip_ping=False, ipv6=False, reachable=True
+    ):
         """Build the command_line and scanstats parts of the response.
 
         :param host: scanned host
@@ -38,7 +44,9 @@ class MockPortScanner:
         """
         ip_argument = "6" if ipv6 else ""
         skip_argument = "Pn" if skip_ping else "sV"
-        command_line = "nmap -oX -{} -{} {}".format(ip_argument, skip_argument, host)
+        command_line = "nmap -oX -{} -{} {}".format(
+            ip_argument, skip_argument, host
+        )
         elapsed = "10.7" if skip_ping else "4.2"
         downhosts = "0" if reachable else "1"
         uphosts = "1" if reachable else "0"
@@ -176,7 +184,9 @@ class MockPortScanner:
                 ),
                 "sslv2-drown": "\n",
             },
-            -1: {"clamav-exec": "ERROR: Script execution failed (use -d to debug)"},
+            -1: {
+                "clamav-exec": "ERROR: Script execution failed (use -d to debug)"
+            },
         }
         if port not in vuln_result:
             return vuln_result[-1]
@@ -191,7 +201,13 @@ class MockPortScanner:
         return osmatch_dict
 
     def build_result_ipv4(
-        self, host, ports, skip_ping=False, ipv="ipv4", sudo=False, osmatch=False
+        self,
+        host,
+        ports,
+        skip_ping=False,
+        ipv="ipv4",
+        sudo=False,
+        osmatch=False,
     ):
         """Build the returned dict for ipv4 hosts
 
@@ -222,7 +238,10 @@ class MockPortScanner:
         if osmatch:
             host_dict["osmatch"] = self.build_osmatch()
 
-        result = {"nmap": global_infos, "scan": {host: PortScannerHostDict(host_dict)}}
+        result = {
+            "nmap": global_infos,
+            "scan": {host: PortScannerHostDict(host_dict)},
+        }
         return result
 
     def build_result_vulnerable(self, host):
@@ -252,7 +271,9 @@ class MockPortScanner:
 
         :returns: scan_result as dictionnary
         """
-        global_infos = self.build_global_test_info(host, skip_ping, reachable=False)
+        global_infos = self.build_global_test_info(
+            host, skip_ping, reachable=False
+        )
 
         result = {"nmap": global_infos, "scan": {}}
 
@@ -265,7 +286,9 @@ class MockPortScanner:
 
         may raise AssertionError exception if called before scanning
         """
-        assert "nmap" in self._scan_result, "Do a scan before trying to get result !"
+        assert (
+            "nmap" in self._scan_result
+        ), "Do a scan before trying to get result !"
         assert (
             "scanstats" in self._scan_result["nmap"]
         ), "Do a scan before trying to get result !"
