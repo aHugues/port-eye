@@ -34,9 +34,7 @@ class PortReport:
     vulnerabilities (List of Vulnerability) List of identified vulnerabilities
     """
 
-    def __init__(self,
-                 port_number, state, tcp, udp,
-                 service, version, vulnerabilities):
+    def __init__(self, port_number, state, tcp, udp, service, version, vulnerabilities):
         self.port_number = port_number
         self.state = state
         self.tcp = tcp
@@ -44,15 +42,16 @@ class PortReport:
         self.service = service
         self.version = version
         self.vulnerabilities = vulnerabilities
-    
+
     def __str__(self):
-        port_type = 'TCP' if self.tcp else 'UDP'
+        port_type = "TCP" if self.tcp else "UDP"
         returned_string = "[{}] Port {} ({}): ".format(
-            port_type, self.port_number, self.state)
-        service = 'Unknown' if self.service == '' else self.service
+            port_type, self.port_number, self.state
+        )
+        service = "Unknown" if self.service == "" else self.service
         returned_string += service
-        if self.version != '':
-            returned_string += ' - Version {}'.format(self.version)
+        if self.version != "":
+            returned_string += " - Version {}".format(self.version)
         return returned_string
 
 
@@ -68,7 +67,17 @@ class HostReport:
     duration (float): Test duration for the scan
     """
 
-    def __init__(self, ip, hostname, mac, state, ports, duration, operating_system, operating_system_accuracy):
+    def __init__(
+        self,
+        ip,
+        hostname,
+        mac,
+        state,
+        ports,
+        duration,
+        operating_system,
+        operating_system_accuracy,
+    ):
         self.ip = ip
         self.hostname = hostname
         self.mac = mac
@@ -77,11 +86,11 @@ class HostReport:
         self.duration = parse_duration_from_seconds(duration)
         self.operating_system = operating_system
         self.operating_system_accuracy = operating_system_accuracy
-    
+
     def __str__(self):
         returned_string = "HostReport {} - {}".format(self.ip, self.state)
         returned_string += "\n\tHostname: {}".format(self.hostname)
-        if self.mac != '':
+        if self.mac != "":
             returned_string += "\n\tMAC Address: {}".format(self.mac)
         returned_string += " ({})".format(self.duration)
         returned_string += "\n\tPorts:"
@@ -102,18 +111,16 @@ class Report:
 
     def __init__(self, duration, results):
         nb_hosts = len(results)
-        up = len([x for x in results if x.state == 'up'])
+        up = len([x for x in results if x.state == "up"])
         self.nb_hosts = nb_hosts
         self.up = up
         self.results = results
         self.duration = parse_duration_from_seconds(duration)
-    
+
     def __str__(self):
         returned_string = "Scanning report\n================\n\n\n"
-        returned_string += "{} Hosts scanned in {}".format(
-            self.nb_hosts, self.duration)
+        returned_string += "{} Hosts scanned in {}".format(self.nb_hosts, self.duration)
         returned_string += "\n{} Hosts up\n\n".format(self.up)
         for host in self.results:
             returned_string += "\n* {}".format(str(host))
         return returned_string
-

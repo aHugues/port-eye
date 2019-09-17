@@ -6,7 +6,6 @@ import sys
 import re
 
 
-
 def read_input_file(filepath):
     """Read the content from the provided txt file.
 
@@ -28,11 +27,11 @@ def read_input_file(filepath):
     this_is_a_test: This is a test function.
     """
     lines = []
-    with open(filepath, 'r') as inputfile:
+    with open(filepath, "r") as inputfile:
         lines = inputfile.readlines()
 
-    if sys.version_info[0] == 2: # pragma: no cover
-        lines = [line.decode('utf-8') for line in lines]
+    if sys.version_info[0] == 2:  # pragma: no cover
+        lines = [line.decode("utf-8") for line in lines]
 
     return [line.strip() for line in lines]
 
@@ -74,13 +73,13 @@ def build_hosts_dict(hosts):
             except ValueError:
                 print(host)
                 ignored.append(host)
-    
+
     return {
-        'ipv4_hosts': ipv4_hosts,
-        'ipv6_hosts': ipv6_hosts,
-        'ipv4_networks': ipv4_networks,
-        'ipv6_networks': ipv6_networks,
-        'ignored': ignored
+        "ipv4_hosts": ipv4_hosts,
+        "ipv6_hosts": ipv6_hosts,
+        "ipv4_networks": ipv4_networks,
+        "ipv6_networks": ipv6_networks,
+        "ignored": ignored,
     }
 
 
@@ -142,13 +141,13 @@ def parse_vuln_report(raw_report, service):
     error_messages = [
         "No reply from server (TIMEOUT)",
         "ERROR:",
-        "Script execution failed"
+        "Script execution failed",
     ]
 
     for error_message in error_messages:
         if error_message in raw_report or len(raw_report) < 5:
             return ([], False)
-    
+
     # If result is valid, parse into the correct format.
     vulns = []
 
@@ -159,17 +158,12 @@ def parse_vuln_report(raw_report, service):
 
     for i in range(len(cves)):
         cve = cves[i].strip()
-        link = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(
-            cve
-        )
+        link = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(cve)
         name = names[i].strip()
-        vulns.append({
-            'service': service,
-            'CVE': cve,
-            'description': name,
-            'link': link
-        })
-    
+        vulns.append(
+            {"service": service, "CVE": cve, "description": name, "link": link}
+        )
+
     return (vulns, True)
 
 
@@ -197,7 +191,7 @@ def parse_vuln_reports(full_report, service):
         print("coucou")
         (report, valid) = parse_vuln_report(report, service)
         print(report, valid)
-        all_valid = (valid or all_valid)
+        all_valid = valid or all_valid
         if valid:
             reports += report
     return (reports, all_valid)

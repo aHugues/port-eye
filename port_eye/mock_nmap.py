@@ -4,24 +4,29 @@ import sys
 import logging
 from nmap import PortScannerHostDict
 
-class MockPortScanner():
+
+class MockPortScanner:
     """MockPortScanner allows to use a mock version of nmap from Python."""
 
     def __init__(self):
         """Initialize MockPortScanner module."""
         logging.debug("Creating MockPortScanner")
-        self._scan_result = {} 
-    
+        self._scan_result = {}
+
     def __getitem__(self, host):
         """Return a host detail."""
-        if sys.version_info[0]==2: # pragma: no cover
-            assert type(host) in (str, unicode), 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
-        else: # pragma: no cover
-            assert type(host) is str, 'Wrong type for [host], should be a string [was {0}]'.format(type(host))
-        return self._scan_result['scan'][host]
+        if sys.version_info[0] == 2:  # pragma: no cover
+            assert type(host) in (
+                str,
+                unicode,
+            ), "Wrong type for [host], should be a string [was {0}]".format(type(host))
+        else:  # pragma: no cover
+            assert (
+                type(host) is str
+            ), "Wrong type for [host], should be a string [was {0}]".format(type(host))
+        return self._scan_result["scan"][host]
 
-    def build_global_test_info(
-        self, host, skip_ping=False, ipv6=False, reachable=True):
+    def build_global_test_info(self, host, skip_ping=False, ipv6=False, reachable=True):
         """Build the command_line and scanstats parts of the response.
 
         :param host: scanned host
@@ -31,28 +36,24 @@ class MockPortScanner():
 
         :returns global_result as dictionnary
         """
-        ip_argument = '6' if ipv6 else ''
-        skip_argument = 'Pn' if skip_ping else 'sV'
-        command_line = 'nmap -oX -{} -{} {}'.format(
-            ip_argument,
-            skip_argument,
-            host
-        )
-        elapsed = '10.7' if skip_ping else '4.2'
-        downhosts = '0' if reachable else '1'
-        uphosts = '1' if reachable else '0'
+        ip_argument = "6" if ipv6 else ""
+        skip_argument = "Pn" if skip_ping else "sV"
+        command_line = "nmap -oX -{} -{} {}".format(ip_argument, skip_argument, host)
+        elapsed = "10.7" if skip_ping else "4.2"
+        downhosts = "0" if reachable else "1"
+        uphosts = "1" if reachable else "0"
 
         return {
-            'command_line': command_line,
-            'scanstats': {
-                'timestr': 'Sun Sep  8 10:21:46 2019',
-                'elapsed': elapsed,
-                'uphosts': uphosts,
-                'downhosts': downhosts,
-                'totalhosts': '1',
-            }
+            "command_line": command_line,
+            "scanstats": {
+                "timestr": "Sun Sep  8 10:21:46 2019",
+                "elapsed": elapsed,
+                "uphosts": uphosts,
+                "downhosts": downhosts,
+                "totalhosts": "1",
+            },
         }
-    
+
     def reachable(self, host, sudo=False):
         """Test if the host should be reachable.
 
@@ -62,20 +63,18 @@ class MockPortScanner():
         :returns reachable as bool
         """
         reachable_full = [
-            '127.0.0.1',
-            '::1',
-            '92.222.10.88',
-            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da'
+            "127.0.0.1",
+            "::1",
+            "92.222.10.88",
+            "2a01:e0a:129:5ed0:211:32ff:fe2d:68da",
         ]
-        reachable_sudo = [
-            '82.64.28.100'
-        ]
+        reachable_sudo = ["82.64.28.100"]
 
         if sudo:
             return host in (reachable_full + reachable_sudo)
         else:
             return host in reachable_full
-    
+
     def build_tcp_result(self, port, skip_ping=False):
         """Build the result for a port.
 
@@ -86,62 +85,62 @@ class MockPortScanner():
         """
 
         if port not in [22, 80, 443]:
-            raise KeyError('Port not in range (22, 80, 443)')
+            raise KeyError("Port not in range (22, 80, 443)")
 
         else:
-            additionnal_infos = ['product', 'version', 'extrainfo', 'cpe']
+            additionnal_infos = ["product", "version", "extrainfo", "cpe"]
             ports_result = {
                 22: {
-                    'state': 'open',
-                    'reason': 'syn-ack',
-                    'name': 'ssh',
-                    'product': 'OpenSSH',
-                    'version': '7.6p1 Ubuntu 4ubuntu0.3',
-                    'extrainfo': 'Ubuntu Linux; protocol 2.0',
-                    'conf': '10',
-                    'cpe': 'cpe:/o:linux:linux_kernel'
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "ssh",
+                    "product": "OpenSSH",
+                    "version": "7.6p1 Ubuntu 4ubuntu0.3",
+                    "extrainfo": "Ubuntu Linux; protocol 2.0",
+                    "conf": "10",
+                    "cpe": "cpe:/o:linux:linux_kernel",
                 },
                 80: {
-                    'state': 'open',
-                    'reason': 'syn-ack',
-                    'name': 'http',
-                    'product': 'nginx',
-                    'version': '',
-                    'extrainfo': '',
-                    'conf': '10',
-                    'cpe': 'cpe:/a:igor_sysoev:nginx'
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "http",
+                    "product": "nginx",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "10",
+                    "cpe": "cpe:/a:igor_sysoev:nginx",
                 },
                 443: {
-                    'state': 'open',
-                    'reason': 'syn-ack',
-                    'name': 'http',
-                    'product': 'nginx',
-                    'version': '',
-                    'extrainfo': '',
-                    'conf': '10',
-                    'cpe': 'cpe:/a:igor_sysoev:nginx'
-                }
+                    "state": "open",
+                    "reason": "syn-ack",
+                    "name": "http",
+                    "product": "nginx",
+                    "version": "",
+                    "extrainfo": "",
+                    "conf": "10",
+                    "cpe": "cpe:/a:igor_sysoev:nginx",
+                },
             }
 
             # Remove additionnal info if ping is skipped
             if skip_ping:
                 for info in additionnal_infos:
-                    ports_result[port][info] = ''
-                ports_result[port]['conf'] = '3'
-            
+                    ports_result[port][info] = ""
+                ports_result[port]["conf"] = "3"
+
             return ports_result[port]
-    
+
     def get_hostname(self, host):
         """Return the hostname for an ip."""
         hostnames = {
-            '127.0.0.1': 'localhost',
-            '92.222.10.88': 'example.com',
-            '::1': 'localhost',
-            '2a01:e0a:129:5ed0:211:32ff:fe2d:68da': 'acme.me',
-            "82.64.28.100": 'acne.bad'
+            "127.0.0.1": "localhost",
+            "92.222.10.88": "example.com",
+            "::1": "localhost",
+            "2a01:e0a:129:5ed0:211:32ff:fe2d:68da": "acme.me",
+            "82.64.28.100": "acne.bad",
         }
         return hostnames[host]
-    
+
     def is_vulnerable(self, host, port):
         """Return True if a vulnerability exists for the host.
         
@@ -149,7 +148,7 @@ class MockPortScanner():
         
         :returns: is_vulnerable as bool
         """
-        return host in ['92.222.10.88'] and port in [443]
+        return host in ["92.222.10.88"] and port in [443]
 
     def build_vuln_result(self, port):
         """Build the raw result for vulnerabilities for a vulnerable host.
@@ -161,9 +160,9 @@ class MockPortScanner():
         """
         vuln_result = {
             443: {
-                'http-aspnet-debug': 'ERROR: Script execution failed (use -d to debug)',
-                'http-slowloris-check': 
-                    ("\n  VULNERABLE:\n  Slowloris DOS "
+                "http-aspnet-debug": "ERROR: Script execution failed (use -d to debug)",
+                "http-slowloris-check": (
+                    "\n  VULNERABLE:\n  Slowloris DOS "
                     "attack\n    State: LIKELY VULNERABLE\n    IDs:  "
                     "CVE:CVE-2007-6750\n      Slowloris tries to keep many "
                     "connections to the target web server open and hold\n      "
@@ -173,33 +172,27 @@ class MockPortScanner():
                     "the http server's resources causing Denial Of Service.\n  "
                     "    \n    Disclosure date: 2009-09-17\n    References:\n  "
                     "    https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750\n"
-                    "      http://ha.ckers.org/slowloris/\n"),
-                'sslv2-drown': '\n',
+                    "      http://ha.ckers.org/slowloris/\n"
+                ),
+                "sslv2-drown": "\n",
             },
-            -1: {
-                'clamav-exec': 'ERROR: Script execution failed (use -d to debug)'
-            },
+            -1: {"clamav-exec": "ERROR: Script execution failed (use -d to debug)"},
         }
         if port not in vuln_result:
             return vuln_result[-1]
         return vuln_result[port]
-    
+
     def build_osmatch(self):
         """Build the dict for osmatch."""
         osmatch_dict = [
-            {
-                'name': 'linux 3.7 - 3.10',
-                'accuracy': '100'
-            },
-            {
-                'name': 'linux 3.4 - 3.6',
-                'accuracy': '95'
-            }
+            {"name": "linux 3.7 - 3.10", "accuracy": "100"},
+            {"name": "linux 3.4 - 3.6", "accuracy": "95"},
         ]
         return osmatch_dict
-    
+
     def build_result_ipv4(
-        self, host, ports, skip_ping=False, ipv='ipv4', sudo=False, osmatch = False):
+        self, host, ports, skip_ping=False, ipv="ipv4", sudo=False, osmatch=False
+    ):
         """Build the returned dict for ipv4 hosts
 
         If the skip_ping argument is set to True, results are sure to be 
@@ -220,23 +213,18 @@ class MockPortScanner():
             tcp_dict[port] = self.build_tcp_result(port, skip_ping)
 
         host_dict = {
-                    'hostnames': [{'name': hostname, 'type': 'PTR'}],
-                    'addresses': {ipv: host},
-                    'status': {'state': 'up', 'reason': 'conn-refused'},
-                    'tcp': tcp_dict
+            "hostnames": [{"name": hostname, "type": "PTR"}],
+            "addresses": {ipv: host},
+            "status": {"state": "up", "reason": "conn-refused"},
+            "tcp": tcp_dict,
         }
 
         if osmatch:
-            host_dict['osmatch'] = self.build_osmatch()
+            host_dict["osmatch"] = self.build_osmatch()
 
-        result = {
-            'nmap': global_infos,
-            'scan': {
-                host: PortScannerHostDict(host_dict)
-            }
-        }
+        result = {"nmap": global_infos, "scan": {host: PortScannerHostDict(host_dict)}}
         return result
-    
+
     def build_result_vulnerable(self, host):
         """Build the returned dict for a vulnerable host
 
@@ -252,12 +240,11 @@ class MockPortScanner():
                 port_report = self.build_vuln_result(port)
             else:
                 port_report = self.build_vuln_result(-1)
-            result['scan'][host]['tcp'][port]['script'] = port_report
-        
+            result["scan"][host]["tcp"][port]["script"] = port_report
+
         return result
 
-    
-    def build_result_unreachable(self, host, skip_ping = False):
+    def build_result_unreachable(self, host, skip_ping=False):
         """Build the returned dict for an unreachable host
 
         :param host: host to scan
@@ -265,16 +252,12 @@ class MockPortScanner():
 
         :returns: scan_result as dictionnary
         """
-        global_infos = self.build_global_test_info(
-            host, skip_ping, reachable=False)
-        
-        result = {
-            'nmap': global_infos,
-            'scan': {}
-        }
+        global_infos = self.build_global_test_info(host, skip_ping, reachable=False)
 
-        return result 
-    
+        result = {"nmap": global_infos, "scan": {}}
+
+        return result
+
     def scanstats(self):
         """
         returns scanstats structure
@@ -282,10 +265,12 @@ class MockPortScanner():
 
         may raise AssertionError exception if called before scanning
         """
-        assert 'nmap' in self._scan_result, 'Do a scan before trying to get result !'
-        assert 'scanstats' in self._scan_result['nmap'], 'Do a scan before trying to get result !'
+        assert "nmap" in self._scan_result, "Do a scan before trying to get result !"
+        assert (
+            "scanstats" in self._scan_result["nmap"]
+        ), "Do a scan before trying to get result !"
 
-        return self._scan_result['nmap']['scanstats']        
+        return self._scan_result["nmap"]["scanstats"]
 
     def scan(self, hosts="127.0.0.1", ports=None, arguments="-sV", sudo=False):
         """Scan given hosts
@@ -301,31 +286,60 @@ class MockPortScanner():
 
         :returns: scan_result as dictionnary
         """
-        if sys.version_info[0]==2: # pragma: no cover
-            assert type(hosts) in (str, unicode), 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
-            assert type(ports) in (str, unicode, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
-            assert type(arguments) in (str, unicode), 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
-        else: # pragma: no cover
-            assert type(hosts) is str, 'Wrong type for [hosts], should be a string [was {0}]'.format(type(hosts))  # noqa
-            assert type(ports) in (str, type(None)), 'Wrong type for [ports], should be a string [was {0}]'.format(type(ports))  # noqa
-            assert type(arguments) is str, 'Wrong type for [arguments], should be a string [was {0}]'.format(type(arguments))  # noqa
+        if sys.version_info[0] == 2:  # pragma: no cover
+            assert type(hosts) in (
+                str,
+                unicode,
+            ), "Wrong type for [hosts], should be a string [was {0}]".format(
+                type(hosts)
+            )  # noqa
+            assert type(ports) in (
+                str,
+                unicode,
+                type(None),
+            ), "Wrong type for [ports], should be a string [was {0}]".format(
+                type(ports)
+            )  # noqa
+            assert type(arguments) in (
+                str,
+                unicode,
+            ), "Wrong type for [arguments], should be a string [was {0}]".format(
+                type(arguments)
+            )  # noqa
+        else:  # pragma: no cover
+            assert (
+                type(hosts) is str
+            ), "Wrong type for [hosts], should be a string [was {0}]".format(
+                type(hosts)
+            )  # noqa
+            assert type(ports) in (
+                str,
+                type(None),
+            ), "Wrong type for [ports], should be a string [was {0}]".format(
+                type(ports)
+            )  # noqa
+            assert (
+                type(arguments) is str
+            ), "Wrong type for [arguments], should be a string [was {0}]".format(
+                type(arguments)
+            )  # noqa
 
         skip_ping = "Pn" in arguments
-        ipv = 'ipv6' if "6" in arguments else 'ipv4'
+        ipv = "ipv6" if "6" in arguments else "ipv4"
 
-        osmatch = '-O' in arguments
+        osmatch = "-O" in arguments
 
+        ports = [22] if hosts == "127.0.0.1" else [22, 80, 443]
 
-        ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
-
-        if '--script vuln' in arguments and self.reachable(hosts, sudo):
+        if "--script vuln" in arguments and self.reachable(hosts, sudo):
             result = self.build_result_vulnerable(hosts)
         else:
             if self.reachable(hosts, sudo):
-                result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv, osmatch=osmatch)
+                result = self.build_result_ipv4(
+                    hosts, ports, skip_ping, ipv=ipv, osmatch=osmatch
+                )
             else:
                 result = self.build_result_unreachable(hosts, skip_ping)
 
         self._scan_result = result
         return result
-
