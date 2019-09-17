@@ -142,6 +142,48 @@ class MockPortScanner():
         }
         return hostnames[host]
     
+    def is_vulnerable(self, host, port):
+        """Return True if a vulnerability exists for the host.
+        
+        :param host: host to test
+        
+        :returns: is_vulnerable as bool
+        """
+        return host in ['92.222.10.88'] and port in [443]
+
+    def build_vuln_result(self, port):
+        """Build the raw result for vulnerabilities for a vulnerable host.
+
+        :param port: port to scan
+
+
+        :returns: result as dict
+        """
+        vuln_result = {
+            443: {
+                'http-aspnet-debug': 'ERROR: Script execution failed (use -d to debug)',
+                'http-slowloris-check': 
+                    ("\n  VULNERABLE:\n  Slowloris DOS "
+                    "attack\n    State: LIKELY VULNERABLE\n    IDs:  "
+                    "CVE:CVE-2007-6750\n      Slowloris tries to keep many "
+                    "connections to the target web server open and hold\n      "
+                    "them open as long as possible.  It accomplishes this by "
+                    "opening connections to\n      the target web server and "
+                    "sending a partial request. By doing so, it starves\n      "
+                    "the http server's resources causing Denial Of Service.\n  "
+                    "    \n    Disclosure date: 2009-09-17\n    References:\n  "
+                    "    https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750\n"
+                    "      http://ha.ckers.org/slowloris/\n"),
+                'sslv2-drown': '\n',
+            },
+            -1: {
+                'clamav-exec': 'ERROR: Script execution failed (use -d to debug)'
+            },
+        }
+        if port not in vuln_result:
+            return vuln_result[-1]
+        return vuln_result[port]
+    
     def build_result_ipv4(
         self, host, ports, skip_ping=False, ipv='ipv4', sudo=False):
         """Build the returned dict for ipv4 hosts
@@ -177,6 +219,26 @@ class MockPortScanner():
             }
         }
         return result
+    
+    def build_result_vulnerable(self, host):
+        """Build the returned dict for a vulnerable host
+
+        :param host: host to scan
+
+        :returns: scan_result as dictionnary
+        """
+        ports = [22, 80, 443]
+        result = self.build_result_ipv4(host, ports)
+
+        for port in ports:
+            if self.is_vulnerable(host, port):
+                port_report = self.build_vuln_result(port)
+            else:
+                port_report = self.build_vuln_result(-1)
+            result['scan'][host]['tcp'][port]['script'] = port_report
+        
+        return result
+
     
     def build_result_unreachable(self, host, skip_ping = False):
         """Build the returned dict for an unreachable host
@@ -236,11 +298,14 @@ class MockPortScanner():
 
 
         ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
-        
-        if self.reachable(hosts, sudo):
-            result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv)
+
+        if '--script vuln' in arguments:
+            result = self.build_result_vulnerable(hosts)
         else:
-            result = self.build_result_unreachable(hosts, skip_ping)
+            if self.reachable(hosts, sudo):
+                result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv)
+            else:
+                result = self.build_result_unreachable(hosts, skip_ping)
 
         self._scan_result = result
         return result
