@@ -299,7 +299,7 @@ class MockPortScanner():
 
         ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
 
-        if '--script vuln' in arguments:
+        if '--script vuln' in arguments and self.reachable(hosts, sudo):
             result = self.build_result_vulnerable(hosts)
         else:
             if self.reachable(hosts, sudo):

@@ -4,7 +4,7 @@ import ipaddress
 import nmap
 from .mock_nmap import MockPortScanner
 from .report import PortReport, HostReport, Report, Vulnerability
-from .utils import get_hosts_from_cidr, parse_vuln_report
+from .utils import get_hosts_from_cidr, parse_vuln_reports
 import sys
 import time
 import threading
@@ -80,21 +80,23 @@ class Scanner():
         self.scanner.scan(self.host, arguments=arguments)
         try:
             scripts_results = self.scanner[self.host]
-            for key in scripts_results['tcp']:
-                vulns_report = scripts_results['tcp'][key]['scripts']
+            for port in scripts_results['tcp']:
+                vulns_report = scripts_results['tcp'][port]['script']
+                raw_vulnerabilities = [vulns_report[key] for key in vulns_report]
                 vulnerabilities = []
-                vulnerabilities_dict = parse_vuln_report(
-                    vulns_report,
-                    scripts_results['tcp'][key]['product']
+                (vulnerabilities_dict, vulnerable) = parse_vuln_reports(
+                    raw_vulnerabilities,
+                    scripts_results['tcp'][port]['product']
                     )
-                for vulnerability_dict in vulnerabilities_dict:
-                    vulnerability = Vulnerability(
-                        vulnerability_dict['service'],
-                        vulnerability_dict['CVE'],
-                        vulnerability_dict['description'],
-                        vulnerability_dict['link'])
-                    vulnerabilities.append(vulnerability)
-                self.vulnerabilities[key] = vulnerabilities
+                if vulnerable:
+                    for vulnerability_dict in vulnerabilities_dict:
+                        vulnerability = Vulnerability(
+                            vulnerability_dict['service'],
+                            vulnerability_dict['CVE'],
+                            vulnerability_dict['description'],
+                            vulnerability_dict['link'])
+                        vulnerabilities.append(vulnerability)
+                self.vulnerabilities[port] = vulnerabilities
         except KeyError:
             pass
 

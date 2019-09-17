@@ -171,3 +171,33 @@ def parse_vuln_report(raw_report, service):
         })
     
     return (vulns, True)
+
+
+def parse_vuln_reports(full_report, service):
+    """Parse the full vuln report as raw string into a usable format.
+
+    Parameters
+    ----------
+    raw_report : str
+        Raw report from nmap
+    
+    Returns
+    -------
+    parsed_report : List of dicts
+        Parsed report as dicts
+    valid : bool
+        Does the string correspond to a vulnerability
+    """
+    print("1")
+    all_valid = False
+    print("2")
+    print(all_valid)
+    reports = []
+    for report in full_report:
+        print("coucou")
+        (report, valid) = parse_vuln_report(report, service)
+        print(report, valid)
+        all_valid = (valid or all_valid)
+        if valid:
+            reports += report
+    return (reports, all_valid)
