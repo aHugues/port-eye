@@ -184,8 +184,22 @@ class MockPortScanner():
             return vuln_result[-1]
         return vuln_result[port]
     
+    def build_osmatch(self):
+        """Build the dict for osmatch."""
+        osmatch_dict = [
+            {
+                'name': 'linux 3.7 - 3.10',
+                'accuracy': '100'
+            },
+            {
+                'name': 'linux 3.4 - 3.6',
+                'accuracy': '95'
+            }
+        ]
+        return osmatch_dict
+    
     def build_result_ipv4(
-        self, host, ports, skip_ping=False, ipv='ipv4', sudo=False):
+        self, host, ports, skip_ping=False, ipv='ipv4', sudo=False, osmatch = False):
         """Build the returned dict for ipv4 hosts
 
         If the skip_ping argument is set to True, results are sure to be 
@@ -211,6 +225,9 @@ class MockPortScanner():
                     'status': {'state': 'up', 'reason': 'conn-refused'},
                     'tcp': tcp_dict
         }
+
+        if osmatch:
+            host_dict['osmatch'] = self.build_osmatch()
 
         result = {
             'nmap': global_infos,
@@ -296,6 +313,8 @@ class MockPortScanner():
         skip_ping = "Pn" in arguments
         ipv = 'ipv6' if "6" in arguments else 'ipv4'
 
+        osmatch = '-O' in arguments
+
 
         ports = [22] if hosts == '127.0.0.1' else [22, 80, 443]
 
@@ -303,7 +322,7 @@ class MockPortScanner():
             result = self.build_result_vulnerable(hosts)
         else:
             if self.reachable(hosts, sudo):
-                result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv)
+                result = self.build_result_ipv4(hosts, ports, skip_ping, ipv=ipv, osmatch=osmatch)
             else:
                 result = self.build_result_unreachable(hosts, skip_ping)
 

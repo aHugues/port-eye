@@ -36,7 +36,8 @@ def test_rendering():
     host_report = HostReport(
         '127.0.0.1', 'localhost', 'ff:ff:ff', 'up',
         [port_report_1, port_report_2],
-        421.69
+        421.69,
+        'linux 3.7 - 3.10', '100'
     )
 
     full_report = Report(421.69, [host_report])

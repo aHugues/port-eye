@@ -183,6 +183,8 @@ def test_host_scanning():
     assert report.mac == ''
     assert report.state == 'up'
     assert len(report.ports) >= 3
+    assert report.operating_system == ''
+    assert report.operating_system_accuracy == ''
 
     for port in report.ports:
         assert port.__class__ == PortReport
@@ -194,6 +196,18 @@ def test_host_scanning():
     port_numbers = [port.port_number for port in report.ports]
     for expected_port in expected_ports:
         assert expected_port in port_numbers
+
+
+def test_os_detection():
+    """Test the os detection from a host."""
+
+    host = ipaddress.ip_address(u'92.222.10.88')
+    scanner = Scanner(host, mock=True)
+    scanner.perform_scan(sudo=True)
+
+    report = scanner.extract_host_report()
+    assert report.operating_system == 'linux 3.7 - 3.10'
+    assert report.operating_system_accuracy == '100'
 
 
 def test_host_scanning_ipv6():

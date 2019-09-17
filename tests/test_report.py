@@ -56,7 +56,8 @@ def test_create_host_report():
         'ff:ff:ff:ff:ff:ff',
         'up',
         ports_report,
-        42.1337)
+        42.1337,
+        'linux 3.7 - 3.10', '100')
 
     assert host_report.ip == '192.168.0.42'
     assert host_report.hostname == 'hostname1'
@@ -92,7 +93,9 @@ def test_create_report():
         'ff:ff:ff:ff:ff:ff',
         'up',
         ports_report1,
-        42)
+        42,
+        'linux 3.7 - 3.10',
+        '100')
 
     # Host 2
     vulnerability4 = Vulnerability('ssh', 'CVE-4815162342', 'Sample CVE', 'no')
@@ -115,9 +118,11 @@ def test_create_report():
         'ff:ff:ff:ff:ff:ff',
         'up',
         ports_report2,
-        43)
+        43,
+        'linux 3.7 - 3.10', 
+        '100')
 
-    host_report3 = HostReport('192.168.0.5', 'hostname3', '', 'down', None, 12)
+    host_report3 = HostReport('192.168.0.5', 'hostname3', '', 'down', None, 12, '', '')
 
     report = Report(42, [host_report1, host_report2, host_report3])
 
@@ -153,7 +158,8 @@ def test_str_host_report():
     host_report = HostReport(
         '127.0.0.1', 'localhost', 'ff:ff:ff', 'up',
         [port_report_1, port_report_2],
-        421.69
+        421.69,
+        'linux 3.7 - 3.10', '100'
     )
 
     result_lines = str(host_report).split('\n')
@@ -178,7 +184,8 @@ def test_str_full_report():
     host_report = HostReport(
         '127.0.0.1', 'localhost', 'ff:ff:ff', 'up',
         [port_report_1, port_report_2],
-        421.69
+        421.69,
+        'linux 3.7 - 3.10', '100'
     )
 
     full_report = Report(421.69, [host_report])
