@@ -68,6 +68,8 @@ class Scanner():
         # sudo (Bool) default False: Run as privileged user.
         """
         arguments = '-sV'
+        if sudo:
+            arguments += ' -O'
         if self.is_ipv6:
             arguments += ' -6'
         self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
@@ -77,7 +79,8 @@ class Scanner():
         arguments = "--script vuln"
         if self.is_ipv6:
             arguments += ' -6'
-        self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
+        arguments += ' -O'
+        self.scanner.scan(self.host, arguments=arguments, sudo=True)
         try:
             scripts_results = self.scanner[self.host]
             for port in scripts_results['tcp']:
@@ -149,7 +152,17 @@ class Scanner():
             mac = ''
             state = 'up'
             ports = self.extract_ports('tcp') + self.extract_ports('udp')
-        
+            operating_system = ""
+            operating_system_accuracy = ""
+
+            print(self.scanner._scan_result )
+            print(self.scanner[self.host])
+
+            if 'osmatch' in self.scanner[self.host]:
+                operating_system_dict = self.scanner[self.host]['osmatch']
+                operating_system = operating_system_dict[0]['name']
+                operating_system_accuracy = operating_system_dict[0]['accuracy']
+
         else:
             hostname = ''
             mac = ''
@@ -161,7 +174,8 @@ class Scanner():
             hostname,
             mac,
             state,
-            ports, duration
+            ports, duration,
+            operating_system, operating_system_accuracy
         )
 
         return host_report

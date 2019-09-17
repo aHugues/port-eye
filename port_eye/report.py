@@ -68,13 +68,15 @@ class HostReport:
     duration (float): Test duration for the scan
     """
 
-    def __init__(self, ip, hostname, mac, state, ports, duration):
+    def __init__(self, ip, hostname, mac, state, ports, duration, operating_system, operating_system_accuracy):
         self.ip = ip
         self.hostname = hostname
         self.mac = mac
         self.state = state
         self.ports = ports
         self.duration = parse_duration_from_seconds(duration)
+        self.operating_system = operating_system
+        self.operating_system_accuracy = operating_system_accuracy
     
     def __str__(self):
         returned_string = "HostReport {} - {}".format(self.ip, self.state)
