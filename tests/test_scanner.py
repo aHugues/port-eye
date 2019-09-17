@@ -7,7 +7,7 @@ from port_eye.scanner import Scanner, ScannerHandler
 from port_eye.report import PortReport, HostReport, Report, Vulnerability
 import threading
 
-if sys.version_info[0] == 2: # pragma: no cover
+if sys.version_info[0] == 2:  # pragma: no cover
     from Queue import Queue
 else:
     from queue import Queue
@@ -56,9 +56,7 @@ def test_reachable():
         ipaddress.ip_address(u"127.0.0.1"),
         ipaddress.ip_address(u"92.222.10.88"),
     ]
-    unreachable_hosts = [
-        ipaddress.ip_address(u"192.0.2.1")
-    ]
+    unreachable_hosts = [ipaddress.ip_address(u"192.0.2.1")]
 
     for host in reachable_hosts:
         scanner = Scanner(host, mock=True)
@@ -72,7 +70,8 @@ def test_reachable():
 def test_reachable_ipv6():
     """Check the detection of reachable hosts while IPV6."""
     reachable_host = ipaddress.ip_address(
-        u'2a01:e0a:129:5ed0:211:32ff:fe2d:68da')
+        u"2a01:e0a:129:5ed0:211:32ff:fe2d:68da"
+    )
     scanner = Scanner(reachable_host, True, mock=True)
     assert scanner.is_reachable() is True
 
@@ -80,21 +79,21 @@ def test_reachable_ipv6():
 def test_protocol_verification():
     """Test that only acceptable protocols types are accepted."""
 
-    host = ipaddress.ip_address(u'127.0.0.1')
+    host = ipaddress.ip_address(u"127.0.0.1")
     scanner = Scanner(host, mock=True)
 
     scanner.perform_scan()
 
-    scanner.extract_ports('tcp')
-    scanner.extract_ports('udp')
-    scanner.extract_ports('TCP')
-    scanner.extract_ports('UDP')
+    scanner.extract_ports("tcp")
+    scanner.extract_ports("udp")
+    scanner.extract_ports("TCP")
+    scanner.extract_ports("UDP")
 
     with pytest.raises(ValueError):
-        scanner.extract_ports('http')
+        scanner.extract_ports("http")
 
     with pytest.raises(ValueError):
-        scanner.extract_ports('ssl')
+        scanner.extract_ports("ssl")
 
 
 def test_ports_scanning():
@@ -102,14 +101,14 @@ def test_ports_scanning():
 
     Test is ran on a machine with at least ports 22/80/443 opened.
     """
-    host = ipaddress.ip_address(u'92.222.10.88')
+    host = ipaddress.ip_address(u"92.222.10.88")
     scanner = Scanner(host, mock=True)
 
     assert scanner.is_local() is False
     assert scanner.is_reachable() is True
 
     scanner.perform_scan()
-    ports = scanner.extract_ports('tcp')
+    ports = scanner.extract_ports("tcp")
 
     assert len(ports) >= 3
     for port in ports:
@@ -123,25 +122,25 @@ def test_ports_scanning():
 
 def test_scanning_sudo():
     """Test scanning when necessary to run as sudo."""
-    host = ipaddress.ip_address(u'82.64.28.100')
+    host = ipaddress.ip_address(u"82.64.28.100")
     scanner = Scanner(host, mock=True)
 
     assert scanner.is_reachable() is True
 
     # Run a first time without sudo
     scanner.perform_scan()
-    ports = scanner.extract_ports('tcp')
+    ports = scanner.extract_ports("tcp")
     assert len(ports) == 0
 
     # Run as sudo
     scanner.perform_scan(sudo=True)
-    ports = scanner.extract_ports('tcp')
+    ports = scanner.extract_ports("tcp")
 
     expected_ports = [22, 80, 443]
     assert len(ports) >= 3
     for port in ports:
         assert port.__class__ == PortReport
-    
+
     port_numbers = [port.port_number for port in ports]
     for expected_port in expected_ports:
         assert expected_port in port_numbers
@@ -149,16 +148,16 @@ def test_scanning_sudo():
 
 def test_scanner_handler_sudo():
     """Test full scanning when necessary to run as sudo."""
-    host = ipaddress.ip_address(u'82.64.28.100')
-    
+    host = ipaddress.ip_address(u"82.64.28.100")
+
     ipv4_hosts = [host]
     handler = ScannerHandler(ipv4_hosts, [], [], [], True)
 
     report = handler.run_scans()
-    
+
     assert report.nb_hosts == 1
     assert report.up == 1
-    assert report.results[0].hostname == 'acne.bad'
+    assert report.results[0].hostname == "acne.bad"
     assert len(report.results[0].ports) == 3
 
     ports = [port.port_number for port in report.results[0].ports]
@@ -170,7 +169,7 @@ def test_scanner_handler_sudo():
 def test_host_scanning():
     """Test the report extraction from a complete host."""
 
-    host = ipaddress.ip_address(u'92.222.10.88')
+    host = ipaddress.ip_address(u"92.222.10.88")
     scanner = Scanner(host, mock=True)
     scanner.perform_scan()
     scanner.find_vulnerabilities()
@@ -178,19 +177,19 @@ def test_host_scanning():
     report = scanner.extract_host_report()
     assert report.__class__ == HostReport
 
-    assert report.hostname == 'example.com'
-    assert report.ip == '92.222.10.88'
-    assert report.mac == ''
-    assert report.state == 'up'
+    assert report.hostname == "example.com"
+    assert report.ip == "92.222.10.88"
+    assert report.mac == ""
+    assert report.state == "up"
     assert len(report.ports) >= 3
-    assert report.operating_system == ''
-    assert report.operating_system_accuracy == ''
+    assert report.operating_system == ""
+    assert report.operating_system_accuracy == ""
 
     for port in report.ports:
         assert port.__class__ == PortReport
         if port.port_number == 443:
             assert len(port.vulnerabilities) == 1
-            assert port.vulnerabilities[0].cve == 'CVE-2007-6750'
+            assert port.vulnerabilities[0].cve == "CVE-2007-6750"
 
     expected_ports = [22, 80, 443]
     port_numbers = [port.port_number for port in report.ports]
@@ -201,13 +200,13 @@ def test_host_scanning():
 def test_os_detection():
     """Test the os detection from a host."""
 
-    host = ipaddress.ip_address(u'92.222.10.88')
+    host = ipaddress.ip_address(u"92.222.10.88")
     scanner = Scanner(host, mock=True)
     scanner.perform_scan(sudo=True)
 
     report = scanner.extract_host_report()
-    assert report.operating_system == 'linux 3.7 - 3.10'
-    assert report.operating_system_accuracy == '100'
+    assert report.operating_system == "linux 3.7 - 3.10"
+    assert report.operating_system_accuracy == "100"
 
 
 def test_host_scanning_ipv6():
@@ -220,9 +219,9 @@ def test_host_scanning_ipv6():
     report = scanner.extract_host_report()
     assert report.__class__ == HostReport
 
-    assert report.hostname == 'localhost'
-    assert report.ip == '::1'
-    assert report.state == 'up'
+    assert report.hostname == "localhost"
+    assert report.ip == "::1"
+    assert report.state == "up"
     assert len(report.ports) >= 0
 
 
@@ -232,18 +231,15 @@ def test_scanner_handler_creation():
         ipaddress.ip_address(u"127.0.0.1"),
         ipaddress.ip_address(u"92.222.10.88"),
     ]
-    ipv6_hosts = [
-        ipaddress.ip_address(u"::1")
-    ]
-    ipv4_networks = [
-        ipaddress.ip_network(u"192.168.0.0/30")
-    ]
+    ipv6_hosts = [ipaddress.ip_address(u"::1")]
+    ipv4_networks = [ipaddress.ip_network(u"192.168.0.0/30")]
     ipv6_networks = [
         ipaddress.ip_network(u"2a01:0e0a:0129:5ed0:0211:32ff:fe2d:6800/120")
     ]
 
     scanner_handler = ScannerHandler(
-        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=True)
+        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=True
+    )
 
     assert len(scanner_handler.ipv4_hosts) == 2
     assert len(scanner_handler.ipv6_hosts) == 1
@@ -258,7 +254,7 @@ def test_scanner_handler_creation():
         assert host.__class__ == ipaddress.IPv4Network
     for host in scanner_handler.ipv6_networks:
         assert host.__class__ == ipaddress.IPv6Network
-    
+
     assert len(scanner_handler.scanners) == 260
     for scanner in scanner_handler.scanners:
         assert scanner.__class__ == Scanner
@@ -268,7 +264,7 @@ def test_scan_handling():
     """Test that scanning is performed without issue."""
     ipv4_hosts = [
         ipaddress.ip_address(u"127.0.0.1"),
-        ipaddress.ip_address(u"192.0.2.1")
+        ipaddress.ip_address(u"192.0.2.1"),
     ]
     scanner_handler = ScannerHandler(ipv4_hosts, [], [], [], mock=True)
     hosts_queue = Queue()
@@ -281,11 +277,9 @@ def test_scan_handling():
 
 def test_running_scans():
     """Test running full scans."""
-    ipv4_hosts = [
-        ipaddress.ip_address(u"127.0.0.1")
-    ]
+    ipv4_hosts = [ipaddress.ip_address(u"127.0.0.1")]
     # ipv6_hosts = [
-        # ipaddress.ip_address(u"::1")
+    # ipaddress.ip_address(u"::1")
     # ]
 
     scanner_handler = ScannerHandler(ipv4_hosts, [], [], [], mock=True)
@@ -308,16 +302,19 @@ def test_finding_vulnerabilities():
 
     for vulnerability in scanner.vulnerabilities[443]:
         assert vulnerability.__class__ == Vulnerability
-    
+
     assert len(scanner.vulnerabilities[22]) == 0
     assert len(scanner.vulnerabilities[80]) == 0
     assert len(scanner.vulnerabilities[443]) == 1
-    
+
     vulnerability = scanner.vulnerabilities[443][0]
-    assert vulnerability.service == 'nginx'
-    assert vulnerability.cve == 'CVE-2007-6750'
-    assert vulnerability.description == 'Slowloris DOS attack'
-    assert vulnerability.link == "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"
+    assert vulnerability.service == "nginx"
+    assert vulnerability.cve == "CVE-2007-6750"
+    assert vulnerability.description == "Slowloris DOS attack"
+    assert (
+        vulnerability.link
+        == "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"
+    )
 
 
 def test_finding_vulnerabilities_ipv6():
@@ -337,5 +334,5 @@ def test_finding_vulnerabilities_invalid_host():
     host = ipaddress.ip_address(u"192.0.2.1")
     scanner = Scanner(host, mock=True)
     scanner.find_vulnerabilities()
-    assert scanner.scanner._scan_result['scan'] == {}
-    assert scanner.scanner._scan_result['nmap']['scanstats']['downhosts'] == '1'
+    assert scanner.scanner._scan_result["scan"] == {}
+    assert scanner.scanner._scan_result["nmap"]["scanstats"]["downhosts"] == "1"
