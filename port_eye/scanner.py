@@ -72,12 +72,12 @@ class Scanner():
             arguments += ' -6'
         self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
     
-    def find_vulnerabilities(self):
+    def find_vulnerabilities(self, sudo=False):
         """Scan the host for potential vulnerabilities."""
         arguments = "--script vuln"
         if self.is_ipv6:
             arguments += ' -6'
-        self.scanner.scan(self.host, arguments=arguments)
+        self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
         try:
             scripts_results = self.scanner[self.host]
             for port in scripts_results['tcp']:
@@ -198,6 +198,7 @@ class ScannerHandler():
         logging.debug("Starting scan for host {}".format(scanner.host))
         if scanner.is_reachable():
             scanner.perform_scan()
+            scanner.find_vulnerabilities()
             try:
                 report = scanner.extract_host_report()
                 logging.debug("Found result for host {}".format(scanner.host))
@@ -207,13 +208,13 @@ class ScannerHandler():
                     "No result found for host {}... Trying with -Pn".format(
                         scanner.host))
                 scanner.perform_scan(True)
+                scanner.find_vulnerabilities(True)
                 report = scanner.extract_host_report()
                 logging.debug("Found result for host {}".format(scanner.host))
                 queue.put(report)
         else:
             report = scanner.extract_host_report(False)
             queue.put(report)
-            print(report)
             logging.debug("Host not reachable")
 
     def run_scans(self):
