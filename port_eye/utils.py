@@ -9,22 +9,22 @@ import re
 def read_input_file(filepath):
     """Read the content from the provided txt file.
 
-    Hosts should be put in the file on separated lines: each line contains 
+    Hosts should be put in the file on separated lines: each line contains
     exactly one host.
 
-    Parameters
-    ----------
-    filepath : str
-        Path of the txt file to read.
+    Example:
+        127.0.0.1
+        92.88.222.10
+        8.8.8.8
+        192.168.0.0/30
+        ::1
 
-    Returns
-    -------
-        content : dict
-            Dict object containing the hosts and cidr to be scanned.
-    
-    See Also
-    --------
-    this_is_a_test: This is a test function.
+    Args:
+        filepath : A string representing the path of the file to read.
+
+    Returns:
+        A list containing the list of hosts from the input file as strings.
+
     """
     lines = []
     with open(filepath, "r") as inputfile:
@@ -39,16 +39,23 @@ def read_input_file(filepath):
 def build_hosts_dict(hosts):
     """Build the list of hosts as a dict with correct IP format from list.
 
-    Read the input hosts as strings and returnes corresponding types as 
-    ip_addresses or ip_networks as a dict. Invalid addresses are returned 
+    Read the input hosts as strings and returnes corresponding types as
+    ip_addresses or ip_networks as a dict. Invalid addresses are returned.
 
-    ### Arguments
-    - hosts (List of str): List of hosts to be parsed
+    Args:
+        hosts: List of strings representing the hosts to be analyzed.
 
-    ### Returns
-    - parsed_hosts (dict): Dict of the parsed hosts
+    Returns:
+        Dictionnary containing the parsed hosts. The result has the following
+        format:
+
+        {'ipv4_hosts': [...],
+         'ipv6_hosts': [...],
+         'ipv4_networks': [...],
+         'ipv6_networks': [...],
+         'ignored': [...]}
+
     """
-
     ipv4_hosts = []
     ipv6_hosts = []
     ipv4_networks = []
@@ -85,14 +92,14 @@ def build_hosts_dict(hosts):
 
 def parse_duration_from_seconds(raw_duration):
     """Return a string in the xxHyyMzzs format from a number of seconds.
-    
-    ### Arguments
-    - raw_duration (float): Number of seconds in the duration
-    
-    ### Returns
-    - duration (str): String representing the full duration in H/M/s
-    """
 
+    Args:
+        raw_duration: Float representing the number of seconds in the duration.
+
+    Returns:
+        String representing the full duration in H/M/s.
+
+    """
     if raw_duration < 0:
         raise ValueError("Duration should be positive.")
     else:
@@ -111,12 +118,13 @@ def parse_duration_from_seconds(raw_duration):
 
 def get_hosts_from_cidr(cidr_block):
     """Get the list of hosts inside a cidr block.
-    
-    # Arguments
-    cidr_block (IPV4Network): CIDR block to analyze.
-    
-    # Returns
-    hosts (List of IPV4Hosts): List of hosts in the network.
+
+    Args:
+        cidr_block: IPV4Network or IPV6Network object to analyze.
+
+    Returns:
+        List of hosts (IPV4Address or IPV6Address) in the network.
+
     """
     return list(cidr_block.hosts())
 
@@ -124,19 +132,23 @@ def get_hosts_from_cidr(cidr_block):
 def parse_vuln_report(raw_report, service):
     """Parse a vuln report as raw string into a usable format.
 
-    Parameters
-    ----------
-    raw_report : str
-        Raw report from nmap
-    
-    Returns
-    -------
-    parsed_report : List of dicts
-        Parsed report as dicts
-    valid : bool
-        Does the string correspond to a vulnerability
-    """
+    Args:
+        raw_report: String representing the raw report from nmap
 
+    Returns:
+        Tuple representing the list of vulnerabilities and a boolean indicating
+        whether vulnerabilities were found.
+
+        Tuple has the format (parsed_report, valid) where parsed_report is
+        a list of dicts representing vulnerabilities and valid is a bool having
+        True if vulnerabilities were found.
+
+        each dict in parsed_report has the following format:
+
+        {'service': 'nginx', 'CVE': 'CVE-2017-1052',
+         'description': 'DDOS attack', 'link': 'https://....'}
+
+    """
     # Check if value corresponds to an error
     error_messages = [
         "No reply from server (TIMEOUT)",
@@ -168,29 +180,29 @@ def parse_vuln_report(raw_report, service):
 
 
 def parse_vuln_reports(full_report, service):
-    """Parse the full vuln report as raw string into a usable format.
+    """Parse a list of vuln reports and return them all into dicts.
 
-    Parameters
-    ----------
-    raw_report : str
-        Raw report from nmap
-    
-    Returns
-    -------
-    parsed_report : List of dicts
-        Parsed report as dicts
-    valid : bool
-        Does the string correspond to a vulnerability
+    Args:
+        raw_report: String representing the raw report from nmap
+
+    Returns:
+        Tuple representing the list of vulnerabilities and a boolean indicating
+        whether vulnerabilities were found.
+
+        Tuple has the format (parsed_report, valid) where parsed_report is
+        a list of dicts representing vulnerabilities and valid is a bool having
+        True if vulnerabilities were found.
+
+        each dict in parsed_report has the following format:
+
+        {'service': 'nginx', 'CVE': 'CVE-2017-1052',
+         'description': 'DDOS attack', 'link': 'https://....'}
+
     """
-    print("1")
     all_valid = False
-    print("2")
-    print(all_valid)
     reports = []
     for report in full_report:
-        print("coucou")
         (report, valid) = parse_vuln_report(report, service)
-        print(report, valid)
         all_valid = valid or all_valid
         if valid:
             reports += report
