@@ -56,8 +56,6 @@ def build_hosts_dict(hosts):
     ipv6_networks = []
     ignored = []
 
-    print(hosts)
-
     for host in hosts:
         try:
             parsed_host = ipaddress.ip_address(host)
