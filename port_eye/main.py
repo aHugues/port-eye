@@ -1,20 +1,76 @@
-"""Entrypoint for the application."""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+main.py - 2019.09.17.
+
+This is the entrypoint for the entire tool. When calling the `port-eye`
+executable from the CLI, the method `main` from this file is called with
+corresponding arguments and options.
+
+Author:
+    Aurélien Hugues - me@aurelienhugues.com
+
+License:
+    MIT
+
+MIT License
+
+Copyright (c) 2019 Aurélien Hugues
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
 
 import click
 import ipaddress
 import logging
-from .utils import read_input_file_json
-from .utils import parse_input_file
+from .utils import read_input_file
+from .utils import build_hosts_dict
 from .scanner import Scanner, ScannerHandler
 from .export import Export
 from .report import Report
 
+# Allow using the -h argument to call the help function
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
-def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
-    """Run scans for all the hosts."""
 
+def run_scans(
+    output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
+):
+    """Run scans for all the hosts and save the output as HTML.
+
+    Args:
+        output: String representing the path of the file into which report
+            should be saved.
+        ipv4_hosts: List of IPV4 hosts as IPV4Host objects.
+        ipv6_hosts: List of IPV6 hosts as IPV6Host objects.
+        ipv4_networks: List of IPV4 networks as IPV4Network objects.
+        ipv6_networks: List of IPV6 networks as IPV6Network objects.
+        mock: Boolean to use the mock nmap API. When True, a fake nmap API is
+            used for testing purposes. Default to False.
+
+    """
     logging.info("Starting scans")
-    handler = ScannerHandler(ipv4_hosts, ipv6_hosts, cidr_blocks, mock=mock)
+    handler = ScannerHandler(
+        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=mock
+    )
     report = handler.run_scans()
     logging.info("Scans completed, starting exporting...")
     export = Export()
@@ -22,76 +78,77 @@ def run_scans(output, ipv4_hosts, ipv6_hosts, cidr_blocks, mock=False):
     logging.info("Done.")
 
 
-@click.command()
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
-    '--ipv4', '-h4',
+    "--target",
+    "-t",
+    "targets",
     multiple=True,
     type=str,
-    help="IPV4 address of host to check")
+    help="Target host (IPV4, IPV6 or CIDR",
+)
 @click.option(
-    '--ipv6', '-h6',
-    multiple=True,
-    type=str,
-    help="IPV6 address of host to check")
-@click.option(
-    '--cidr', '-c',
-    multiple=True,
-    type=str,
-    help="CIDR block of hosts to check")
-@click.option(
-    '--file', '-f',
+    "--file",
+    "-f",
     type=click.Path(exists=True),
-    help="File containing the hosts to check")
+    help="File containing the hosts to check",
+)
 @click.option(
-    '--logging', '-l', 'log_level',
-    type=click.Choice(['debug', 'info', 'warning', 'error']),
-    default='warning',
-    help="Select logging level in the terminal",)
+    "--logging",
+    "-l",
+    "log_level",
+    type=click.Choice(["debug", "info", "warning", "error"]),
+    default="warning",
+    help="Select logging level in the terminal",
+)
 @click.option(
-    '--mock', '-m',
+    "--mock",
+    "-m",
     is_flag=True,
-    help="Use mock API instead of really running nmap")
+    help="Use mock API instead of really running nmap",
+)
 @click.option(
-    '--output', '-o',
-    type=click.Path(exists=False), required=True,
-    help="Output HTML file into which the results must be stored")
-def main(ipv4, ipv6, cidr, file, log_level, mock, output):
+    "--output",
+    "-o",
+    type=click.Path(exists=False),
+    required=True,
+    help="Output HTML file into which the results must be stored",
+)
+def main(targets, file, log_level, mock, output):
     """Run the main application from arguments provided in the CLI."""
     # Set logging level
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
 
-    parsed_ipv4 = [ipaddress.ip_address(address) for address in ipv4]
-    logging.debug("Found {} IPV4 from CLI.".format(len(parsed_ipv4)))
-
-    parsed_ipv6 = [ipaddress.ip_address(address) for address in ipv6]
-    logging.debug("Found {} IPV6 from CLI.".format(len(parsed_ipv6)))
-
-    parsed_cidr = [ipaddress.ip_network(address) for address in cidr]
-    logging.debug("Found {} CIDR from CLI.".format(len(parsed_cidr)))
+    file_content = []
 
     if file is not None:
-        file_extension = file.split('.')[-1]
-        if file_extension == 'json':
-            logging.debug("Reading input JSON file.")
-            content = read_input_file_json(file)
-        else:
-            content = {}
-            click.echo("Unsupported input file type", err=True)
-            ctx = click.get_current_context()
-            ctx.exit(2)
+        file_content = read_input_file(file)
 
-        parsed_file = parse_input_file(content)
-    
-        parsed_ipv4 += parsed_file['ipv4']
-        parsed_ipv6 += parsed_file['ipv6']
-        parsed_cidr += parsed_file['cidr']
-    
-    if len(parsed_ipv4 + parsed_ipv6 + parsed_cidr) > 0:
-        logging.debug("Running for {} IPV4, {} IPV6 and {} CIDR blocks.".format(
-            len(parsed_ipv4), len(parsed_ipv6), len(parsed_cidr)
-        ))
-        run_scans(output, parsed_ipv4, parsed_ipv6, parsed_cidr, mock)
+    hosts_dict = build_hosts_dict(list(targets) + file_content)
+
+    parsed_ipv4 = hosts_dict["ipv4_hosts"]
+    parsed_ipv6 = hosts_dict["ipv6_hosts"]
+    parsed_ipv4_networks = hosts_dict["ipv4_networks"]
+    parsed_ipv6_networks = hosts_dict["ipv6_networks"]
+
+    if (
+        len(
+            parsed_ipv4
+            + parsed_ipv6
+            + parsed_ipv4_networks
+            + parsed_ipv6_networks
+        )
+        > 0
+    ):
+        run_scans(
+            output,
+            parsed_ipv4,
+            parsed_ipv6,
+            parsed_ipv4_networks,
+            parsed_ipv6_networks,
+            mock,
+        )
     else:
         logging.debug("No input host found, exiting with help.")
         ctx = click.get_current_context()

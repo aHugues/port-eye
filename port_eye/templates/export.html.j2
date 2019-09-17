@@ -82,7 +82,7 @@
                             <td>{{ host.duration }}</td>
                             <td>{{ host.hostname }}</td>
                             <td>{{ host.mac }}</td>
-                            <td class="temp">Linux ftw 420.69</td>
+                            <td>{{ host.operating_system }} [Accuracy: {{ host.operating_system_accuracy }}%] </td>
                         </tr>
                     </table>
 
@@ -103,7 +103,11 @@
                             </td>
                             <td>{{ port.service }}</td>
                             <td>{{ port.version }}</td>
-                            <td class="temp">Yes</td>
+                            <td>
+                            {% if port.vulnerabilities|length > 0 %}Yes
+                            {% else %}No
+                            {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </table>
@@ -116,12 +120,16 @@
                             <th>Short description</th>
                             <th>Link</th>
                         </tr>
+                        {% for port in host.ports %}
+                        {% for vulnerability in port.vulnerabilities %}
                         <tr>
-                            <td>Bloup</td>
-                            <td>12</td>
-                            <td>Privilege Escalation</td>
-                            <td>click here</td>
+                            <td>{{ vulnerability.service }}</td>
+                            <td>{{ vulnerability.cve }}</td>
+                            <td>{{ vulnerability.description }}</td>
+                            <td><a href="{{ vulnerability.link }}">Reference</a></td>
                         </tr>
+                        {% endfor %}
+                        {% endfor %}
                     </table>
                 </div>
             </div>

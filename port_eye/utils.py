@@ -1,81 +1,142 @@
-"""Utils function to help run the program."""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+utils.py - 2019.09.17.
+
+This module provides important methods to run the tool, such as parsing
+methods or method to read input files.
+
+Author:
+    Aurélien Hugues - me@aurelienhugues.com
+
+License:
+    MIT
+
+MIT License
+
+Copyright (c) 2019 Aurélien Hugues
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
 
 import json
 import ipaddress
+import sys
+import re
 
 
-def read_input_file_json(filepath):
-    """Read the content from the provided JSON file.
-
-    # Arguments
-    filepath (str): Path of the JSON file to read.
-
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
-    """
-    with open(filepath, 'r') as json_file:
-        content = json.load(json_file)
-        return content
-
-
-def read_input_file_txt(filepath):
+def read_input_file(filepath):
     """Read the content from the provided txt file.
 
-    # Arguments
-    filepath (str): Path of the txt file to read.
+    Hosts should be put in the file on separated lines: each line contains
+    exactly one host.
 
-    # Returns
-    content (dict): Dict object containing the hosts and cidr to be scanned.
+    Example:
+        127.0.0.1
+        92.88.222.10
+        8.8.8.8
+        192.168.0.0/30
+        ::1
+
+    Args:
+        filepath : A string representing the path of the file to read.
+
+    Returns:
+        A list containing the list of hosts from the input file as strings.
+
     """
-    return "Not done yet"
+    lines = []
+    with open(filepath, "r") as inputfile:
+        lines = inputfile.readlines()
+
+    if sys.version_info[0] == 2:  # pragma: no cover
+        lines = [line.decode("utf-8") for line in lines]
+
+    return [line.strip() for line in lines]
 
 
-def parse_input_file(file_content):
-    """Parse the content read from file or CLI into correct IP format.
+def build_hosts_dict(hosts):
+    """Build the list of hosts as a dict with correct IP format from list.
 
-    Read the provided dictionnary and return a dictionnary composed of
-    `ip_address` and `ip_network` objects from the `ipaddress` library. A
-    `ValueError` exception is raised when a value has not a correct ipv4/ipv6
-    or CIDR format.
+    Read the input hosts as strings and returnes corresponding types as
+    ip_addresses or ip_networks as a dict. Invalid addresses are returned.
 
-    # Arguments
-    file_content (dict): Dict containing the hosts and cidr to be scanned.
+    Args:
+        hosts: List of strings representing the hosts to be analyzed.
 
-    # Returns:
-    parsed_content (dict): Dict composed of parsed objects to be scanned.
+    Returns:
+        Dictionnary containing the parsed hosts. The result has the following
+        format:
+
+        {'ipv4_hosts': [...],
+         'ipv6_hosts': [...],
+         'ipv4_networks': [...],
+         'ipv6_networks': [...],
+         'ignored': [...]}
+
     """
-    if 'ipv4' in file_content:
-        parsed_ipv4 = [
-            ipaddress.ip_address(host) for host in file_content['ipv4']]
-    else:
-        parsed_ipv4 = []
-    if 'ipv6' in file_content:
-        parsed_ipv6 = [
-            ipaddress.ip_address(host) for host in file_content['ipv6']]
-    else:
-        parsed_ipv6 = []
-    if 'cidr' in file_content:
-        parsed_cidr = [
-            ipaddress.ip_network(host) for host in file_content['cidr']]
-    else:
-        parsed_cidr = []
+    ipv4_hosts = []
+    ipv6_hosts = []
+    ipv4_networks = []
+    ipv6_networks = []
+    ignored = []
+
+    for host in hosts:
+        try:
+            parsed_host = ipaddress.ip_address(host)
+            if parsed_host.__class__ == ipaddress.IPv4Address:
+                ipv4_hosts.append(parsed_host)
+            else:
+                ipv6_hosts.append(parsed_host)
+        except ValueError as e:
+            print(e)
+            try:
+                parsed_network = ipaddress.ip_network(host)
+                if parsed_network.__class__ == ipaddress.IPv4Network:
+                    ipv4_networks.append(parsed_network)
+                else:
+                    ipv6_networks.append(parsed_network)
+            except ValueError:
+                print(host)
+                ignored.append(host)
+
     return {
-        'ipv4': parsed_ipv4,
-        'ipv6': parsed_ipv6,
-        'cidr': parsed_cidr,
+        "ipv4_hosts": ipv4_hosts,
+        "ipv6_hosts": ipv6_hosts,
+        "ipv4_networks": ipv4_networks,
+        "ipv6_networks": ipv6_networks,
+        "ignored": ignored,
     }
 
 
 def parse_duration_from_seconds(raw_duration):
     """Return a string in the xxHyyMzzs format from a number of seconds.
-    
-    ## Arguments
-    - raw_duration (float): Number of seconds in the duration
-    
-    ## Returns
-    - duration (str): String representing the full duration in H/M/s
-    """
 
+    Args:
+        raw_duration: Float representing the number of seconds in the duration.
+
+    Returns:
+        String representing the full duration in H/M/s.
+
+    """
     if raw_duration < 0:
         raise ValueError("Duration should be positive.")
     else:
@@ -94,11 +155,92 @@ def parse_duration_from_seconds(raw_duration):
 
 def get_hosts_from_cidr(cidr_block):
     """Get the list of hosts inside a cidr block.
-    
-    # Arguments
-    cidr_block (IPV4Network): CIDR block to analyze.
-    
-    # Returns
-    hosts (List of IPV4Hosts): List of hosts in the network.
+
+    Args:
+        cidr_block: IPV4Network or IPV6Network object to analyze.
+
+    Returns:
+        List of hosts (IPV4Address or IPV6Address) in the network.
+
     """
     return list(cidr_block.hosts())
+
+
+def parse_vuln_report(raw_report, service):
+    """Parse a vuln report as raw string into a usable format.
+
+    Args:
+        raw_report: String representing the raw report from nmap
+
+    Returns:
+        Tuple representing the list of vulnerabilities and a boolean indicating
+        whether vulnerabilities were found.
+
+        Tuple has the format (parsed_report, valid) where parsed_report is
+        a list of dicts representing vulnerabilities and valid is a bool having
+        True if vulnerabilities were found.
+
+        each dict in parsed_report has the following format:
+
+        {'service': 'nginx', 'CVE': 'CVE-2017-1052',
+         'description': 'DDOS attack', 'link': 'https://....'}
+
+    """
+    # Check if value corresponds to an error
+    error_messages = [
+        "No reply from server (TIMEOUT)",
+        "ERROR:",
+        "Script execution failed",
+    ]
+
+    for error_message in error_messages:
+        if error_message in raw_report or len(raw_report) < 5:
+            return ([], False)
+
+    # If result is valid, parse into the correct format.
+    vulns = []
+
+    cve_regex = r"CVE:(CVE-\d{4}-\d{4})"
+    names_regex = r"VULNERABLE:\n(.+)"
+    cves = re.findall(cve_regex, raw_report)
+    names = re.findall(names_regex, raw_report)
+
+    for i in range(len(cves)):
+        cve = cves[i].strip()
+        link = "https://cve.mitre.org/cgi-bin/cvename.cgi?name={}".format(cve)
+        name = names[i].strip()
+        vulns.append(
+            {"service": service, "CVE": cve, "description": name, "link": link}
+        )
+
+    return (vulns, True)
+
+
+def parse_vuln_reports(full_report, service):
+    """Parse a list of vuln reports and return them all into dicts.
+
+    Args:
+        raw_report: String representing the raw report from nmap
+
+    Returns:
+        Tuple representing the list of vulnerabilities and a boolean indicating
+        whether vulnerabilities were found.
+
+        Tuple has the format (parsed_report, valid) where parsed_report is
+        a list of dicts representing vulnerabilities and valid is a bool having
+        True if vulnerabilities were found.
+
+        each dict in parsed_report has the following format:
+
+        {'service': 'nginx', 'CVE': 'CVE-2017-1052',
+         'description': 'DDOS attack', 'link': 'https://....'}
+
+    """
+    all_valid = False
+    reports = []
+    for report in full_report:
+        (report, valid) = parse_vuln_report(report, service)
+        all_valid = valid or all_valid
+        if valid:
+            reports += report
+    return (reports, all_valid)
