@@ -1,4 +1,42 @@
-"""Class to handle the scan of target hosts."""
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""
+scanner - 2019.09.17.
+
+This file provides a wrapper around nmap to handle all the scanning operations
+at a higher level, including testing for vulnerabilities, extracting relevant
+information, and returning the result in a usable format.
+
+Author:
+    Aurélien Hugues - me@aurelienhugues.com
+
+License:
+    MIT
+
+MIT License
+
+Copyright (c) 2019 Aurélien Hugues
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+"""
 
 import ipaddress
 import nmap
@@ -17,8 +55,30 @@ else:  # pragma: no cover
 
 
 class Scanner:
-    def __init__(self, host, is_ipv6=False, mock=False):
+    """Handle the scanning operations.
 
+    Attributes:
+        host: A string representing the target host IP address.
+        raw_host: A IPV4Address or IPV6Address representing the target.
+        scanner: A nmap scanner or a MockNmapScanner depending on the
+            parameters.
+        vulnerabilities: A list of dict representing found vulnerabilities.
+        reachable: A boolean indicating if the host is reachable.
+        is_ipv6: A boolean indicating if the host is using an IPV6 address.
+
+    """
+
+    def __init__(self, host, is_ipv6=False, mock=False):
+        """Init a Scanner.
+
+        Args:
+            host: An IPV4Address or IPV6Address representing the target.
+            is_ipv6: A boolean indicating if the target is using IPV6, default
+                to False
+            mock: A boolean indicating if the scanner should use a fake API
+            instead of using nmap to perform the scans. Default to False.
+
+        """
         logging.debug("Creating Scanner for host {}".format(host))
         self.raw_host = host
         self.host = str(host)
@@ -26,7 +86,6 @@ class Scanner:
             self.scanner = MockPortScanner()
         else:
             self.scanner = nmap.PortScanner()
-        self.full_scan_available = False
         self.vulnerabilities = {}
         self.reachable = False
         self.is_ipv6 = is_ipv6
@@ -40,7 +99,7 @@ class Scanner:
             raise TypeError("Invalid type for host")
 
     def is_reachable(self):
-        """Check if the target can be reached."""
+        """Return True if the host can be reached."""
         logging.debug("Testing if host {} is reachable...".format(self.host))
         argument = "-sn --host-timeout 10s"
         if self.is_ipv6:
@@ -56,14 +115,16 @@ class Scanner:
             return False
 
     def is_local(self):
-        """Check if the target is in local network."""
+        """Return True if the host has a private IP."""
         return self.raw_host.is_private
 
     def perform_scan(self, sudo=False):
         """Perform nmap scanning on selected host.
-        
-        # Arguments
-        # sudo (Bool) default False: Run as privileged user.
+
+        Args:
+            sudo: A boolean indicating if the scan should be ran as a
+            privileged user. Default to False.
+
         """
         arguments = "-sV"
         if sudo:
@@ -73,7 +134,13 @@ class Scanner:
         self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
 
     def find_vulnerabilities(self, sudo=False):
-        """Scan the host for potential vulnerabilities."""
+        """Scan the host for potential vulnerabilities.
+
+        Args:
+            sudo: A boolean indicating if the scan should be ran as a
+            privileged user. Default to False.
+
+        """
         arguments = "--script vuln"
         if self.is_ipv6:
             arguments += " -6"
@@ -88,7 +155,8 @@ class Scanner:
                 ]
                 vulnerabilities = []
                 (vulnerabilities_dict, vulnerable) = parse_vuln_reports(
-                    raw_vulnerabilities, scripts_results["tcp"][port]["product"]
+                    raw_vulnerabilities,
+                    scripts_results["tcp"][port]["product"],
                 )
                 if vulnerable:
                     for vulnerability_dict in vulnerabilities_dict:
@@ -104,12 +172,16 @@ class Scanner:
             pass
 
     def extract_ports(self, protocol):
-        """Extract the scanned port from the host.
+        """Extract the scanned ports from the host.
 
-        # Arguments
-        protocol (str): Protocol to use (tcp or udp)
+        Args:
+            protocol: A string representing the protocol to use (tcp or udp).
+
+        Returns:
+            A list of PortReport objects representing the ports scanned for the
+            host using the provided protocol.
+
         """
-
         lowered_protocol = protocol.lower()
         if lowered_protocol not in ["tcp", "udp"]:
             raise ValueError("Protocol should be 'tcp' or 'udp'")
@@ -142,9 +214,14 @@ class Scanner:
 
     def extract_host_report(self, reachable=True):
         """Extract the complete report from the host.
-        
-        :params reachable: Is the host up or down"""
 
+        If the host is down, it must be put in the arguments as it allows the
+        scanner not to look for unexisting information.
+
+        Args:
+            reachable: A boolean indicating if the host is up or down.
+
+        """
         duration = float(self.scanner.scanstats()["elapsed"])
 
         if reachable:
@@ -155,13 +232,12 @@ class Scanner:
             operating_system = ""
             operating_system_accuracy = ""
 
-            print(self.scanner._scan_result)
-            print(self.scanner[self.host])
-
             if "osmatch" in self.scanner[self.host]:
                 operating_system_dict = self.scanner[self.host]["osmatch"]
                 operating_system = operating_system_dict[0]["name"]
-                operating_system_accuracy = operating_system_dict[0]["accuracy"]
+                operating_system_accuracy = operating_system_dict[0][
+                    "accuracy"
+                ]
 
         else:
             hostname = ""
@@ -184,10 +260,23 @@ class Scanner:
 
 
 class ScannerHandler:
+    """Handle the scanning for several targeted hosts.
+
+    This class allows several scans to be ran concurrently in order to improve
+    the scanning spee.
+
+    Attributes:
+        ipv4_hosts: A list of IPV4Address representing IPV4 hosts
+        ipv6_hosts: A list of IPV6Address representing IPV6 hosts
+        ipv4_networks: A list of IPV4Network representing IPV4 networks
+        ipv6_networks: A list of IPV6Network representing IPV6 networks
+
+    """
+
     def __init__(
         self, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
     ):
-
+        """Init a ScannerHandler."""
         self.ipv4_hosts = ipv4_hosts
         self.ipv6_hosts = ipv6_hosts
         self.ipv4_networks = ipv4_networks
@@ -208,6 +297,13 @@ class ScannerHandler:
         logging.debug("Created {} scanners".format(len(self.scanners)))
 
     def run_scan(self, scanner, queue):
+        """Run scanning for a scanner and store the result in the queue.
+
+        Args:
+            scanner: A Scanner to be ran.
+            queue: A Queue in which all results are stored.
+
+        """
         logging.debug("Starting scan for host {}".format(scanner.host))
         if scanner.is_reachable():
             scanner.perform_scan()
@@ -233,6 +329,7 @@ class ScannerHandler:
             logging.debug("Host not reachable")
 
     def run_scans(self):
+        """Handle the entire scanning process and return the final report."""
         hosts_queue = Queue()
         threads = []
 
