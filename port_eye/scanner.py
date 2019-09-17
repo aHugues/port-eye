@@ -3,8 +3,8 @@
 import ipaddress
 import nmap
 from .mock_nmap import MockPortScanner
-from .report import PortReport, HostReport, Report
-from .utils import get_hosts_from_cidr
+from .report import PortReport, HostReport, Report, Vulnerability
+from .utils import get_hosts_from_cidr, parse_vuln_reports
 import sys
 import time
 import threading
@@ -29,6 +29,7 @@ class Scanner():
         else:
             self.scanner = nmap.PortScanner()
         self.full_scan_available = False
+        self.vulnerabilities = {}
         self.reachable = False
         self.is_ipv6 = is_ipv6
 
@@ -70,6 +71,34 @@ class Scanner():
         if self.is_ipv6:
             arguments += ' -6'
         self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
+    
+    def find_vulnerabilities(self, sudo=False):
+        """Scan the host for potential vulnerabilities."""
+        arguments = "--script vuln"
+        if self.is_ipv6:
+            arguments += ' -6'
+        self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
+        try:
+            scripts_results = self.scanner[self.host]
+            for port in scripts_results['tcp']:
+                vulns_report = scripts_results['tcp'][port]['script']
+                raw_vulnerabilities = [vulns_report[key] for key in vulns_report]
+                vulnerabilities = []
+                (vulnerabilities_dict, vulnerable) = parse_vuln_reports(
+                    raw_vulnerabilities,
+                    scripts_results['tcp'][port]['product']
+                    )
+                if vulnerable:
+                    for vulnerability_dict in vulnerabilities_dict:
+                        vulnerability = Vulnerability(
+                            vulnerability_dict['service'],
+                            vulnerability_dict['CVE'],
+                            vulnerability_dict['description'],
+                            vulnerability_dict['link'])
+                        vulnerabilities.append(vulnerability)
+                self.vulnerabilities[port] = vulnerabilities
+        except KeyError:
+            pass
 
     def extract_ports(self, protocol):
         """Extract the scanned port from the host.
@@ -87,6 +116,10 @@ class Scanner():
             ports_list = list(self.scanner[self.host][lowered_protocol])
             for port in ports_list:
                 port_details = self.scanner[self.host][lowered_protocol][port]
+                if port in self.vulnerabilities:
+                    port_vulns = self.vulnerabilities[port]
+                else:
+                    port_vulns = []
                 reported_port = PortReport(
                     port,
                     port_details['state'],
@@ -94,7 +127,7 @@ class Scanner():
                     lowered_protocol == 'udp',
                     port_details['product'],
                     port_details['version'],
-                    []
+                    port_vulns
                 )
                 ports.append(reported_port)
 
@@ -165,6 +198,7 @@ class ScannerHandler():
         logging.debug("Starting scan for host {}".format(scanner.host))
         if scanner.is_reachable():
             scanner.perform_scan()
+            scanner.find_vulnerabilities()
             try:
                 report = scanner.extract_host_report()
                 logging.debug("Found result for host {}".format(scanner.host))
@@ -174,13 +208,13 @@ class ScannerHandler():
                     "No result found for host {}... Trying with -Pn".format(
                         scanner.host))
                 scanner.perform_scan(True)
+                scanner.find_vulnerabilities(True)
                 report = scanner.extract_host_report()
                 logging.debug("Found result for host {}".format(scanner.host))
                 queue.put(report)
         else:
             report = scanner.extract_host_report(False)
             queue.put(report)
-            print(report)
             logging.debug("Host not reachable")
 
     def run_scans(self):

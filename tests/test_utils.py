@@ -7,6 +7,7 @@ from port_eye.utils import read_input_file
 from port_eye.utils import parse_duration_from_seconds
 from port_eye.utils import get_hosts_from_cidr
 from port_eye.utils import build_hosts_dict
+from port_eye.utils import parse_vuln_report
 
 
 def test_duration_parsing():
@@ -82,3 +83,41 @@ def test_parsing_list_hosts():
     assert len(result['ipv6_networks']) == 1
     assert len(result['ignored']) == 2
 
+
+def test_parsing_vuln_report():
+    """Test parsing of vuln report from scripts."""
+
+    script1 = 'ERROR: Script execution failed (use -d to debug)'
+    script2 = (
+        "\n  VULNERABLE:\n  Slowloris DOS attack\n    State: LIKELY "
+        "VULNERABLE\n    IDs:  CVE:CVE-2007-6750\n      Slowloris tries to "
+        "keep many connections to the target web server open and hold\n      "
+        "them open as long as possible.  It accomplishes this by opening "
+        "connections to\n      the target web server and sending a partial "
+        "request. By doing so, it starves\n      the http server's resources "
+        "causing Denial Of Service.\n      \n    Disclosure date: 2009-09-17\n"
+        "    References:\n      "
+        "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750\n      "
+        "http://ha.ckers.org/slowloris/\n"
+    )
+    script3 = "No reply from server (TIMEOUT)"
+    script4 = "\n"
+
+    invalid_scripts = [script1, script3, script4]
+
+    service = 'http-server'
+
+    for script in invalid_scripts:
+        report, valid = parse_vuln_report(script, service)
+        assert len(report) == 0
+        assert valid is False
+
+    report2, valid2 = parse_vuln_report(script2, service)
+    assert len(report2) == 1
+    assert valid2 is True
+    assert report2[0].__class__ == dict
+    assert report2[0]['service'] == service
+    assert report2[0]['CVE'] == "CVE-2007-6750"
+    assert report2[0]['description'] == "Slowloris DOS attack"
+    assert report2[0]['link'] == \
+        "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"

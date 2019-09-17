@@ -8,7 +8,7 @@ class Vulnerability:
 
     # Attributes
     service (str): Affected service
-    CVE (str): ID of the vulnerability
+    cve (str): ID of the vulnerability
     description (str): Descripton of the CVE
     link (str): URL of the CVE
     """

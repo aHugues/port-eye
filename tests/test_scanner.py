@@ -4,7 +4,7 @@ import sys
 import pytest
 import ipaddress
 from port_eye.scanner import Scanner, ScannerHandler
-from port_eye.report import PortReport, HostReport, Report
+from port_eye.report import PortReport, HostReport, Report, Vulnerability
 import threading
 
 if sys.version_info[0] == 2: # pragma: no cover
@@ -173,6 +173,7 @@ def test_host_scanning():
     host = ipaddress.ip_address(u'92.222.10.88')
     scanner = Scanner(host, mock=True)
     scanner.perform_scan()
+    scanner.find_vulnerabilities()
 
     report = scanner.extract_host_report()
     assert report.__class__ == HostReport
@@ -185,6 +186,9 @@ def test_host_scanning():
 
     for port in report.ports:
         assert port.__class__ == PortReport
+        if port.port_number == 443:
+            assert len(port.vulnerabilities) == 1
+            assert port.vulnerabilities[0].cve == 'CVE-2007-6750'
 
     expected_ports = [22, 80, 443]
     port_numbers = [port.port_number for port in report.ports]
@@ -279,3 +283,45 @@ def test_running_scans():
     assert type(report.duration) == str
     assert "127.0.0.1" in [x.ip for x in report.results]
     # assert "::1" in [x.ip for x in report.results]
+
+
+def test_finding_vulnerabilities():
+    """Test using the scanner for vulnerabilities."""
+    host = ipaddress.ip_address(u"92.222.10.88")
+
+    scanner = Scanner(host, mock=True)
+    scanner.find_vulnerabilities()
+
+    for vulnerability in scanner.vulnerabilities[443]:
+        assert vulnerability.__class__ == Vulnerability
+    
+    assert len(scanner.vulnerabilities[22]) == 0
+    assert len(scanner.vulnerabilities[80]) == 0
+    assert len(scanner.vulnerabilities[443]) == 1
+    
+    vulnerability = scanner.vulnerabilities[443][0]
+    assert vulnerability.service == 'nginx'
+    assert vulnerability.cve == 'CVE-2007-6750'
+    assert vulnerability.description == 'Slowloris DOS attack'
+    assert vulnerability.link == "https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2007-6750"
+
+
+def test_finding_vulnerabilities_ipv6():
+    """Test running the scanner for vulnerabilities on IPV6 host."""
+    host = ipaddress.ip_address(u"::1")
+
+    scanner = Scanner(host, mock=True, is_ipv6=True)
+    scanner.find_vulnerabilities()
+
+    assert len(scanner.vulnerabilities[22]) == 0
+    assert len(scanner.vulnerabilities[80]) == 0
+    assert len(scanner.vulnerabilities[443]) == 0
+
+
+def test_finding_vulnerabilities_invalid_host():
+    """Test running the vulnerability scanner on unreachable host."""
+    host = ipaddress.ip_address(u"192.0.2.1")
+    scanner = Scanner(host, mock=True)
+    scanner.find_vulnerabilities()
+    assert scanner.scanner._scan_result['scan'] == {}
+    assert scanner.scanner._scan_result['nmap']['scanstats']['downhosts'] == '1'
