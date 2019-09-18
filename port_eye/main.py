@@ -41,6 +41,7 @@ SOFTWARE.
 import click
 import ipaddress
 import logging
+from pyfiglet import Figlet
 from .utils import read_input_file
 from .utils import build_hosts_dict
 from .scanner import Scanner, ScannerHandler
@@ -52,7 +53,13 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 def run_scans(
-    output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
+    output,
+    ipv4_hosts,
+    ipv6_hosts,
+    ipv4_networks,
+    ipv6_networks,
+    mock=False,
+    sudo=False,
 ):
     """Run scans for all the hosts and save the output as HTML.
 
@@ -65,17 +72,28 @@ def run_scans(
         ipv6_networks: List of IPV6 networks as IPV6Network objects.
         mock: Boolean to use the mock nmap API. When True, a fake nmap API is
             used for testing purposes. Default to False.
+        sudo: Boolean to run scans as a privileged user. Default to False.
 
     """
     logging.info("Starting scans")
     handler = ScannerHandler(
-        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=mock
+        ipv4_hosts,
+        ipv6_hosts,
+        ipv4_networks,
+        ipv6_networks,
+        mock=mock,
+        sudo=sudo,
     )
     report = handler.run_scans()
-    logging.info("Scans completed, starting exporting...")
     export = Export()
     export.render(report, output)
-    logging.info("Done.")
+    print("Report exported to {}".format(output))
+
+
+def display_main_title():
+    """Display the application title to the terminal."""
+    fig = Figlet(font="slant")
+    print(fig.renderText("port-eye"))
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -94,12 +112,23 @@ def run_scans(
     help="File containing the hosts to check",
 )
 @click.option(
-    "--logging",
-    "-l",
-    "log_level",
-    type=click.Choice(["debug", "info", "warning", "error"]),
-    default="warning",
-    help="Select logging level in the terminal",
+    "--output",
+    "-o",
+    type=click.Path(exists=False),
+    required=True,
+    help="Output HTML file into which the results must be stored",
+)
+@click.option(
+    "--sudo",
+    "-s",
+    is_flag=True,
+    help="Run nmap as privileged user for more accurate scanning",
+)
+@click.option(
+    "--debug",
+    "-d",
+    is_flag=True,
+    help="Display debug information to the terminal",
 )
 @click.option(
     "--mock",
@@ -107,16 +136,14 @@ def run_scans(
     is_flag=True,
     help="Use mock API instead of really running nmap",
 )
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(exists=False),
-    required=True,
-    help="Output HTML file into which the results must be stored",
-)
-def main(targets, file, log_level, mock, output):
+def main(targets, file, output, sudo, debug, mock):
     """Run the main application from arguments provided in the CLI."""
+    display_main_title()
+
+    print("Parsing hosts...")
+
     # Set logging level
+    log_level = "debug" if debug else "critical"
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
 
@@ -132,15 +159,16 @@ def main(targets, file, log_level, mock, output):
     parsed_ipv4_networks = hosts_dict["ipv4_networks"]
     parsed_ipv6_networks = hosts_dict["ipv6_networks"]
 
-    if (
-        len(
-            parsed_ipv4
-            + parsed_ipv6
-            + parsed_ipv4_networks
-            + parsed_ipv6_networks
+    total_hosts = len(
+        parsed_ipv4 + parsed_ipv6 + parsed_ipv4_networks + parsed_ipv6_networks
+    )
+
+    if total_hosts > 0:
+        print(
+            "Found {} host{}.".format(
+                total_hosts, "s" if total_hosts > 1 else ""
+            )
         )
-        > 0
-    ):
         run_scans(
             output,
             parsed_ipv4,
@@ -148,11 +176,11 @@ def main(targets, file, log_level, mock, output):
             parsed_ipv4_networks,
             parsed_ipv6_networks,
             mock,
+            sudo,
         )
     else:
-        logging.debug("No input host found, exiting with help.")
         ctx = click.get_current_context()
-        click.echo(ctx.get_help())
+        print("No input host found, exiting...")
         ctx.exit()
 
 

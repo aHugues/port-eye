@@ -43,8 +43,4 @@ def test_no_input():
     runner = CliRunner()
     result = runner.invoke(main, ["-o", "tests/file_test.html"])
     assert result.exit_code == 0
-    assert (
-        "Run the main application from arguments provided in the CLI."
-        in result.output
-    )
-    assert "--help" in result.output
+    assert "No input host found, exiting..." in result.output

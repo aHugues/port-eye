@@ -297,6 +297,10 @@ class MockPortScanner:
         if port not in vuln_result:
             return vuln_result[-1]
         return vuln_result[port]
+    
+    def has_mac(self, host):
+        """Return True if the given IP address is associated to a MAC."""
+        return host == '127.0.0.1'
 
     def build_osmatch(self):
         """Return a dict corresponding to the operating system match.
@@ -371,6 +375,9 @@ class MockPortScanner:
             "tcp": tcp_dict,
         }
 
+        if self.has_mac(host):
+            host_dict['addresses']['mac'] = "9C:B6:D0:B7:7B:9F"
+
         if osmatch:
             host_dict["osmatch"] = self.build_osmatch()
 
@@ -380,21 +387,36 @@ class MockPortScanner:
         }
         return result
 
-    def build_result_vulnerable(self, host):
+    def build_result_vulnerable(
+        self,
+        host,
+        ports,
+        skip_ping=False,
+        ipv="ipv4",
+        sudo=False,
+        osmatch=False,
+    ):
         """Build the returned dict for a vulnerable host.
 
         Results are the normal results returned by build_result_ipv4 with added
         data from found vulnerabilities.
 
         Args:
-            host: A string representing the host to scan.
+            host: Host to scan.
+            ports: List of ports to scan (must be in range (22, 80, 443)).
+            skip_ping: Bool for skipping ping (default to False).
+            ipv: Str indicating qui IPversion is used (default ipv4).
+            sudo: Bool to run as privileged user.
+            osmatch: Bool to match the target OS.
 
         Returns:
             A dict representing the scan information including vulnerabilities.
 
         """
         ports = [22, 80, 443]
-        result = self.build_result_ipv4(host, ports)
+        result = self.build_result_ipv4(
+            host, ports, skip_ping, sudo=sudo, osmatch=osmatch
+        )
 
         for port in ports:
             if self.is_vulnerable(host, port):
@@ -510,12 +532,21 @@ class MockPortScanner:
 
         ports = [22] if hosts == "127.0.0.1" else [22, 80, 443]
 
-        if "--script vuln" in arguments and self.reachable(hosts, sudo):
-            result = self.build_result_vulnerable(hosts)
+        if "--script vuln" in arguments and self.reachable(
+            hosts, sudo or skip_ping
+        ):
+            result = self.build_result_vulnerable(
+                hosts, ports, skip_ping, ipv=ipv, osmatch=osmatch, sudo=sudo
+            )
         else:
-            if self.reachable(hosts, sudo):
+            if self.reachable(hosts, sudo or skip_ping):
                 result = self.build_result_ipv4(
-                    hosts, ports, skip_ping, ipv=ipv, osmatch=osmatch
+                    hosts,
+                    ports,
+                    skip_ping,
+                    ipv=ipv,
+                    osmatch=osmatch,
+                    sudo=sudo,
                 )
             else:
                 result = self.build_result_unreachable(hosts, skip_ping)

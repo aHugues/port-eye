@@ -12,7 +12,7 @@ Simple CLI wrapper around nmap to perform port scanning in Python
 ## Features
 
 - Scanning of IPV4, IPV6 hosts and CIDR blocks.
-- Parsing of hosts from input JSON file.
+- Parsing of hosts from input file.
 - Automated generation of reports in HTML format.
 - Parallel scanning for increased performance.
 - Optional Docker-based execution.
@@ -121,14 +121,14 @@ Usage: port-eye [OPTIONS]
   Run the main application from arguments provided in the CLI.
 
 Options:
-  -t, --target TEXT               Target host (IPV4, IPV6 or CIDR)
-  -f, --file PATH                 File containing the hosts to check
-  -l, --logging [debug|info|warning|error]
-                                  Select logging level in the terminal
-  -m, --mock                      Use mock API instead of really running nmap
-  -o, --output PATH               Output HTML file into which the results must
-                                  be stored  [required]
-  -h, --help                      Show this message and exit.
+  -t, --target TEXT  Target host (IPV4, IPV6 or CIDR
+  -f, --file PATH    File containing the hosts to check
+  -o, --output PATH  Output HTML file into which the results must be stored
+                     [required]
+  -s, --sudo         Run nmap as privileged user for more accurate scanning
+  -d, --debug        Display debug information to the terminal
+  -m, --mock         Use mock API instead of really running nmap
+  -h, --help         Show this message and exit.
 ```
 
 ## Contributing

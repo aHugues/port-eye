@@ -22,7 +22,7 @@ else:
 
 setup(
     name="port-eye",
-    version="0.1.0",
+    version="0.2.0",
     license="MIT",
     url="https://github.com/aHugues/port-eye.git",
     description="Simple CLI port scanner",
@@ -36,6 +36,8 @@ setup(
         "click>=7",
         "python-nmap>=0.6",
         "jinja2>=2.10",
+        "blessings>=0.7",
+        "pyfiglet>=0.8",
     ],
     extras_require={
         "dev": [
