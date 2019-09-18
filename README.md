@@ -19,7 +19,7 @@ Simple CLI wrapper around nmap to perform port scanning in Python
 
 Example command:
 ```bash
-$ port-eye -h4 127.0.0.1 -o report.html
+$ port-eye -t 127.0.0.1 -o report.html
 ```
 
 Output html file example: 
