@@ -41,6 +41,7 @@ setup(
     ],
     extra_requires={
         "dev": [
+            "pytest"
             "pytest-cov",
             "codecov",
             "black",
