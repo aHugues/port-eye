@@ -37,6 +37,7 @@ setup(
         "python-nmap>=0.6",
         "jinja2>=2.10",
         "blessings>=0.7",
+        "pyfiglet>=0.8",
     ],
     extra_requires={
         "dev": [
