@@ -438,21 +438,17 @@ class ScannerHandler:
 
         for worker in threads:
             worker.join()
-        
-
-        logging.debug("All scans completed")
-
 
         if sys.version_info[0] == 2:  # pragma: no cover
             duration = time.clock() - start_time
         else:  # pragma: no cover
             duration = time.perf_counter() - start_time
 
+        print("\n\nAll scans completed in {}s".format(int(duration)))
+
         results = []
         while not hosts_queue.empty():
             results.append(hosts_queue.get())
-
-        logging.debug("Generating report.")
 
         final_report = Report(duration, results)
         return final_report

@@ -85,10 +85,9 @@ def run_scans(
         sudo=sudo,
     )
     report = handler.run_scans()
-    logging.info("Scans completed, starting exporting...")
     export = Export()
     export.render(report, output)
-    logging.info("Done.")
+    print("Report exported to {}".format(output))
 
 
 def display_main_title():
