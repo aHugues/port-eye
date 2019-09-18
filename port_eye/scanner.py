@@ -65,10 +65,11 @@ class Scanner:
         vulnerabilities: A list of dict representing found vulnerabilities.
         reachable: A boolean indicating if the host is reachable.
         is_ipv6: A boolean indicating if the host is using an IPV6 address.
+        sudo: Boolean to run scans as a privileged user. Default to False.
 
     """
 
-    def __init__(self, host, is_ipv6=False, mock=False):
+    def __init__(self, host, is_ipv6=False, mock=False, sudo=False):
         """Init a Scanner.
 
         Args:
@@ -76,7 +77,8 @@ class Scanner:
             is_ipv6: A boolean indicating if the target is using IPV6, default
                 to False
             mock: A boolean indicating if the scanner should use a fake API
-            instead of using nmap to perform the scans. Default to False.
+                instead of using nmap to perform the scans. Default to False.
+            sudo: Boolean to run scans as a privileged user. Default to False.
 
         """
         logging.debug("Creating Scanner for host {}".format(host))
@@ -270,11 +272,20 @@ class ScannerHandler:
         ipv6_hosts: A list of IPV6Address representing IPV6 hosts
         ipv4_networks: A list of IPV4Network representing IPV4 networks
         ipv6_networks: A list of IPV6Network representing IPV6 networks
+        mock: Boolean to use the mock nmap API. When True, a fake nmap API is
+            used for testing purposes. Default to False.
+        sudo: Boolean to run scans as a privileged user. Default to False.
 
     """
 
     def __init__(
-        self, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
+        self,
+        ipv4_hosts,
+        ipv6_hosts,
+        ipv4_networks,
+        ipv6_networks,
+        mock=False,
+        sudo=False,
     ):
         """Init a ScannerHandler."""
         self.ipv4_hosts = ipv4_hosts
@@ -284,15 +295,19 @@ class ScannerHandler:
 
         self.scanners = []
         for host in self.ipv4_hosts:
-            self.scanners.append(Scanner(host, mock=mock))
+            self.scanners.append(Scanner(host, mock=mock, sudo=sudo))
         for host in self.ipv6_hosts:
-            self.scanners.append(Scanner(host, True, mock=mock))
+            self.scanners.append(Scanner(host, True, mock=mock, sudo=sudo))
         for block in self.ipv4_networks:
             hosts = get_hosts_from_cidr(block)
-            self.scanners += [Scanner(host, mock=mock) for host in hosts]
+            self.scanners += [
+                Scanner(host, mock=mock, sudo=sudo) for host in hosts
+            ]
         for block in self.ipv6_networks:
             hosts = get_hosts_from_cidr(block)
-            self.scanners += [Scanner(host, True, mock=mock) for host in hosts]
+            self.scanners += [
+                Scanner(host, True, mock=mock, sudo=sudo) for host in hosts
+            ]
 
         logging.debug("Created {} scanners".format(len(self.scanners)))
 

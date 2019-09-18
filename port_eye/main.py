@@ -52,7 +52,13 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 def run_scans(
-    output, ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=False
+    output,
+    ipv4_hosts,
+    ipv6_hosts,
+    ipv4_networks,
+    ipv6_networks,
+    mock=False,
+    sudo=False,
 ):
     """Run scans for all the hosts and save the output as HTML.
 
@@ -65,11 +71,17 @@ def run_scans(
         ipv6_networks: List of IPV6 networks as IPV6Network objects.
         mock: Boolean to use the mock nmap API. When True, a fake nmap API is
             used for testing purposes. Default to False.
+        sudo: Boolean to run scans as a privileged user. Default to False.
 
     """
     logging.info("Starting scans")
     handler = ScannerHandler(
-        ipv4_hosts, ipv6_hosts, ipv4_networks, ipv6_networks, mock=mock
+        ipv4_hosts,
+        ipv6_hosts,
+        ipv4_networks,
+        ipv6_networks,
+        mock=mock,
+        sudo=sudo,
     )
     report = handler.run_scans()
     logging.info("Scans completed, starting exporting...")
@@ -104,7 +116,7 @@ def run_scans(
     "--sudo",
     "-s",
     is_flag=True,
-    help="Run nmap as privileged user for more accurate scanning"
+    help="Run nmap as privileged user for more accurate scanning",
 )
 @click.option(
     "--logging",
@@ -154,6 +166,7 @@ def main(targets, file, output, sudo, log_level, mock):
             parsed_ipv4_networks,
             parsed_ipv6_networks,
             mock,
+            sudo,
         )
     else:
         ctx = click.get_current_context()
