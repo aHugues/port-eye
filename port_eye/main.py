@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-main.py - 2019.09.17.
+main.py - 2019.09.18.
 
 This is the entrypoint for the entire tool. When calling the `port-eye`
 executable from the CLI, the method `main` from this file is called with
@@ -60,6 +60,7 @@ def run_scans(
     ipv6_networks,
     mock=False,
     sudo=False,
+    jobs=4
 ):
     """Run scans for all the hosts and save the output as HTML.
 
@@ -73,6 +74,8 @@ def run_scans(
         mock: Boolean to use the mock nmap API. When True, a fake nmap API is
             used for testing purposes. Default to False.
         sudo: Boolean to run scans as a privileged user. Default to False.
+        jobs: An int to indicate the max number of concurrent scanners. Default
+            to 4.
 
     """
     logging.info("Starting scans")
@@ -83,6 +86,7 @@ def run_scans(
         ipv6_networks,
         mock=mock,
         sudo=sudo,
+        jobs=jobs
     )
     report = handler.run_scans()
     export = Export()
@@ -136,7 +140,13 @@ def display_main_title():
     is_flag=True,
     help="Use mock API instead of really running nmap",
 )
-def main(targets, file, output, sudo, debug, mock):
+@click.option(
+    "--jobs",
+    "-j",
+    default=4,
+    help="Max number of concurrent scans (default 4)",
+)
+def main(targets, file, output, sudo, debug, mock, jobs):
     """Run the main application from arguments provided in the CLI."""
     display_main_title()
 
@@ -177,6 +187,7 @@ def main(targets, file, output, sudo, debug, mock):
             parsed_ipv6_networks,
             mock,
             sudo,
+            jobs
         )
     else:
         ctx = click.get_current_context()

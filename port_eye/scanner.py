@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-scanner - 2019.09.17.
+scanner - 2019.09.18.
 
 This file provides a wrapper around nmap to handle all the scanning operations
 at a higher level, including testing for vulnerabilities, extracting relevant
@@ -288,7 +288,8 @@ class ScannerHandler:
         mock: Boolean to use the mock nmap API. When True, a fake nmap API is
             used for testing purposes. Default to False.
         sudo: Boolean to run scans as a privileged user. Default to False.
-
+        jobs: An int to indicate the max number of concurrent scanners. Default
+            to 4.
     """
 
     def __init__(
@@ -299,6 +300,7 @@ class ScannerHandler:
         ipv6_networks,
         mock=False,
         sudo=False,
+        jobs=4,
     ):
         """Init a ScannerHandler."""
         self.ipv4_hosts = ipv4_hosts
@@ -306,6 +308,7 @@ class ScannerHandler:
         self.ipv4_networks = ipv4_networks
         self.ipv6_networks = ipv6_networks
         self.term = Terminal()
+        self.jobs = jobs
 
         self.scanners = []
         for host in self.ipv4_hosts:
@@ -341,7 +344,7 @@ class ScannerHandler:
                     )
         return (base + line1, line2)
 
-    def run_scan(self, scanner, queue, lock, term):
+    def run_scan(self, scanner, queue, lock, term, scanners_pool):
         """Run scanning for a scanner and store the result in the queue.
 
         Args:
@@ -349,8 +352,12 @@ class ScannerHandler:
             queue: A Queue in which all results are stored.
             lock: A Lock object to access the terminal.
             term: A Terminal into which displaying the results.
+            scanner_pool: A Semaphore to limit the number of concurrent jobs.
 
         """
+        # Wait for available resource.
+        scanners_pool.acquire()
+
         logging.debug("Starting scan for host {}".format(scanner.host))
 
         lock.acquire()
@@ -402,14 +409,16 @@ class ScannerHandler:
                     lock.release()
                 finally:
                     queue.put(report)
-
-
+        
+        # Release the scanner when finished
+        scanners_pool.release()
 
     def run_scans(self):
         """Handle the entire scanning process and return the final report."""
         hosts_queue = Queue()
         threads = []
         lock = threading.Lock()
+        scanners_pool = threading.Semaphore(self.jobs)
 
         # Move 2 spaces down to make space for display
         print(self.term.move_down)
@@ -431,7 +440,7 @@ class ScannerHandler:
 
         for scanner in self.scanners:
             worker = threading.Thread(
-                target=self.run_scan, args=(scanner, hosts_queue, lock, self.term),
+                target=self.run_scan, args=(scanner, hosts_queue, lock, self.term, scanners_pool),
             )
             threads.append(worker)
             worker.start()

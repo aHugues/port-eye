@@ -19,7 +19,7 @@ Simple CLI wrapper around nmap to perform port scanning in Python
 
 Example command:
 ```bash
-$ port-eye -h4 127.0.0.1 -o report.html
+$ port-eye -t 127.0.0.1 -o report.html
 ```
 
 Output html file example: 
@@ -91,7 +91,7 @@ pip install .
 
 When run without any option, `port-eye` will simply display the help message.
 
-Input hosts can be inputed from the CLI with the option `-t` or `-target`. Inputted hosts 
+Input hosts can be inputed from the CLI with the option `-t` or `--target`. Inputted hosts 
 can be IPV4 and 6 as well as CIDR blocks. 
 
 Hosts can be added from an input file in which hosts are put line by line. Example: 
@@ -121,14 +121,15 @@ Usage: port-eye [OPTIONS]
   Run the main application from arguments provided in the CLI.
 
 Options:
-  -t, --target TEXT  Target host (IPV4, IPV6 or CIDR
-  -f, --file PATH    File containing the hosts to check
-  -o, --output PATH  Output HTML file into which the results must be stored
-                     [required]
-  -s, --sudo         Run nmap as privileged user for more accurate scanning
-  -d, --debug        Display debug information to the terminal
-  -m, --mock         Use mock API instead of really running nmap
-  -h, --help         Show this message and exit.
+  -t, --target TEXT   Target host (IPV4, IPV6 or CIDR
+  -f, --file PATH     File containing the hosts to check
+  -o, --output PATH   Output HTML file into which the results must be stored
+                      [required]
+  -s, --sudo          Run nmap as privileged user for more accurate scanning
+  -d, --debug         Display debug information to the terminal
+  -m, --mock          Use mock API instead of really running nmap
+  -j, --jobs INTEGER  Max number of concurrent scans (default 4)
+  -h, --help          Show this message and exit.
 ```
 
 ## Contributing
