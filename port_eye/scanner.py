@@ -324,6 +324,22 @@ class ScannerHandler:
             ]
 
         logging.debug("Created {} scanners".format(len(self.scanners)))
+    
+    def build_detail_result(self, term, report):
+        """Build the logging results for a completed scanner."""
+        base = term.green('[complete]') + '\t-\t' + report.ip
+        line1 = '\t'
+        if report.hostname != "":
+            line1 += "hostname: {}".format(report.hostname)
+        if report.hostname != "" and report.mac != "":
+            line1 += " - "
+        if report.mac != "":
+            line1 += "MAC: {}".format(report.mac)
+        line2 = "\t\t\t\t\t{} ports up: ({})".format(
+                        len(report.ports),
+                        ", ".join([str(port.port_number) for port in report.ports])
+                    )
+        return (base + line1, line2)
 
     def run_scan(self, scanner, queue, lock, term):
         """Run scanning for a scanner and store the result in the queue.
@@ -346,7 +362,15 @@ class ScannerHandler:
             scanner.perform_scan()
             scanner.find_vulnerabilities()
             report = scanner.extract_host_report()
-            logging.debug("Found result for host {}".format(scanner.host))
+            result = "\t\t{} ports up: ({})".format(
+                len(report.ports),
+                ", ".join([str(port.port_number) for port in report.ports])
+            )
+            (line1, line2) = self.build_detail_result(term, report)
+            lock.acquire()
+            print(line1)
+            print(line2)
+            lock.release()
             queue.put(report)
 
         # The host does block ping requests or is down
@@ -354,9 +378,11 @@ class ScannerHandler:
             # We know the host is down because ping request as privileged user 
             # do not pass
             if scanner.sudo:
-                logging.debug("Host unreachable")
                 report = scanner.extract_host_report(False)
                 queue.put(report)
+                lock.acquire()
+                print(term.red('[Unreachable]') + '\t-\t' + scanner.host)
+                lock.release()
             
             # We are not sure whether the host is down or requests are blocked.
             else:
@@ -364,16 +390,20 @@ class ScannerHandler:
                 scanner.find_vulnerabilities()
                 try:
                     report = scanner.extract_host_report()
-                    logging.debug("Found result for host {}".format(scanner.host))
+                    (line1, line2) = self.build_detail_result(term, report)
+                    lock.acquire()
+                    print(line1)
+                    print(line2)
+                    lock.release()
                 except KeyError:
-                    logging.debug("Host unreachable")
                     report = scanner.extract_host_report(False)
+                    lock.acquire()
+                    print(term.red('[Unreachable]') + '\t-\t' + scanner.host)
+                    lock.release()
                 finally:
                     queue.put(report)
 
-        lock.acquire()
-        print(term.green('[Scan Complete]') + '\t-\t' + scanner.host)
-        lock.release()
+
 
     def run_scans(self):
         """Handle the entire scanning process and return the final report."""
