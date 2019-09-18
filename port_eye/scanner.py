@@ -47,6 +47,7 @@ import sys
 import time
 import threading
 import logging
+from blessings import Terminal
 
 if sys.version_info[0] == 2:  # pragma: no cover
     from Queue import Queue
@@ -301,6 +302,7 @@ class ScannerHandler:
         self.ipv6_hosts = ipv6_hosts
         self.ipv4_networks = ipv4_networks
         self.ipv6_networks = ipv6_networks
+        self.term = Terminal()
 
         self.scanners = []
         for host in self.ipv4_hosts:
@@ -320,15 +322,31 @@ class ScannerHandler:
 
         logging.debug("Created {} scanners".format(len(self.scanners)))
 
-    def run_scan(self, scanner, queue):
+    def run_scan(self, scanner, queue, lock, term, offset):
         """Run scanning for a scanner and store the result in the queue.
 
         Args:
             scanner: A Scanner to be ran.
             queue: A Queue in which all results are stored.
+            lock: A Lock object to access the terminal.
+            term: A Terminal into which displaying the results.
+            offset: An int indicating the row for results.
 
         """
         logging.debug("Starting scan for host {}".format(scanner.host))
+
+        lock.acquire()
+        # Move to the correct line
+        up_list = [term.move_up] * (offset + 1)
+        print(" ".join(up_list))
+        
+        # Display status
+        print(term.move_x(0) + term.blue('[Scanning]') + '\t-\t' + scanner.host)
+
+        # Return to original line
+        return_down = [term.move_down] * (offset - 2)
+        print(" ".join(return_down))
+        lock.release()
 
         # The host does not block ping requests
         if scanner.run_ping_test():
@@ -360,10 +378,32 @@ class ScannerHandler:
                 finally:
                     queue.put(report)
 
+        lock.acquire()
+        # Move to the correct line
+        print(" ".join(up_list))
+        
+        # Display final status
+        print(term.move_x(0) + term.green('[Scan Complete]') + '\t-\t' + scanner.host)
+
+        # Return to original line
+        print(" ".join(return_down))
+        lock.release()
+
     def run_scans(self):
         """Handle the entire scanning process and return the final report."""
         hosts_queue = Queue()
         threads = []
+        lock = threading.Lock()
+
+        # Move 2 spaces down to make space for display
+        print(self.term.move_down)
+
+        # Display waiting status for all hosts
+        for scanner in self.scanners:
+            print(self.term.cyan('[Waiting]') + '\t-\t' + scanner.host)
+        
+        # Move 2 spaces down to make space for further display
+        print(self.term.move_down)
 
         # Start time measurement
         if sys.version_info[0] == 2:  # pragma: no cover
@@ -373,17 +413,23 @@ class ScannerHandler:
 
         logging.debug("Starting scans")
 
+        offset = len(self.scanners) + 2
+        if self.scanners[0].sudo:
+            offset += 1
         for scanner in self.scanners:
             worker = threading.Thread(
-                target=self.run_scan, args=(scanner, hosts_queue)
+                target=self.run_scan, args=(scanner, hosts_queue, lock, self.term, offset),
             )
+            offset -= 1
             threads.append(worker)
             worker.start()
 
         for worker in threads:
             worker.join()
+        
 
         logging.debug("All scans completed")
+
 
         if sys.version_info[0] == 2:  # pragma: no cover
             duration = time.clock() - start_time

@@ -119,12 +119,10 @@ def run_scans(
     help="Run nmap as privileged user for more accurate scanning",
 )
 @click.option(
-    "--logging",
-    "-l",
-    "log_level",
-    type=click.Choice(["debug", "info", "warning", "error"]),
-    default="warning",
-    help="Select logging level in the terminal",
+    "--debug",
+    "-d",
+    is_flag=True,
+    help="Display debug information to the terminal",
 )
 @click.option(
     "--mock",
@@ -132,9 +130,10 @@ def run_scans(
     is_flag=True,
     help="Use mock API instead of really running nmap",
 )
-def main(targets, file, output, sudo, log_level, mock):
+def main(targets, file, output, sudo, debug, mock):
     """Run the main application from arguments provided in the CLI."""
     # Set logging level
+    log_level = "debug" if debug else "critical"
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
 
