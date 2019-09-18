@@ -41,6 +41,7 @@ SOFTWARE.
 import click
 import ipaddress
 import logging
+from pyfiglet import Figlet
 from .utils import read_input_file
 from .utils import build_hosts_dict
 from .scanner import Scanner, ScannerHandler
@@ -90,6 +91,13 @@ def run_scans(
     logging.info("Done.")
 
 
+def display_main_title():
+    """Display the application title to the terminal."""
+    fig = Figlet(font='slant')
+    print(fig.renderText('port-eye'))
+
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option(
     "--target",
@@ -134,6 +142,8 @@ def run_scans(
 )
 def main(targets, file, output, sudo, log_level, mock):
     """Run the main application from arguments provided in the CLI."""
+    display_main_title()
+
     # Set logging level
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
