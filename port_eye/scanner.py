@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-scanner - 2019.09.17.
+scanner - 2019.09.18.
 
 This file provides a wrapper around nmap to handle all the scanning operations
 at a higher level, including testing for vulnerabilities, extracting relevant

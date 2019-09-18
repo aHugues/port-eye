@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-export.py - 2019.09.17.
+export.py - 2019.09.18.
 
 This module handles the exporting from reports to HTML files.
 

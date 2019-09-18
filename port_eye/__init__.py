@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-port-eye - 2019.09.17.
+port-eye - 2019.09.18.
 
 Port-eye is a simple port scanner written in Python providing a wrapper around
 nmap. It allows to easily run scans from the terminal and report the results

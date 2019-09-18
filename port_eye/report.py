@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-report.py - 2019.09.17.
+report.py - 2019.09.18.
 
 This file contains the classes used to store report data in an ordered and easy
 to use format for the rest of the tool, including the exporting to HTML.
