@@ -94,6 +94,19 @@ def run_scans(
     help="File containing the hosts to check",
 )
 @click.option(
+    "--output",
+    "-o",
+    type=click.Path(exists=False),
+    required=True,
+    help="Output HTML file into which the results must be stored",
+)
+@click.option(
+    "--sudo",
+    "-s",
+    is_flag=True,
+    help="Run nmap as privileged user for more accurate scanning"
+)
+@click.option(
     "--logging",
     "-l",
     "log_level",
@@ -107,14 +120,7 @@ def run_scans(
     is_flag=True,
     help="Use mock API instead of really running nmap",
 )
-@click.option(
-    "--output",
-    "-o",
-    type=click.Path(exists=False),
-    required=True,
-    help="Output HTML file into which the results must be stored",
-)
-def main(targets, file, log_level, mock, output):
+def main(targets, file, output, sudo, log_level, mock):
     """Run the main application from arguments provided in the CLI."""
     # Set logging level
     level = getattr(logging, log_level.upper())
@@ -150,9 +156,8 @@ def main(targets, file, log_level, mock, output):
             mock,
         )
     else:
-        logging.debug("No input host found, exiting with help.")
         ctx = click.get_current_context()
-        click.echo(ctx.get_help())
+        print("No input host found, exiting...")
         ctx.exit()
 
 
