@@ -288,9 +288,10 @@ def test_scan_handling():
     hosts_queue = Queue()
     lock = threading.Lock()
     term = blessings.Terminal()
+    sem = threading.Semaphore(4)
 
     scanner_handler.run_scan(
-        scanner_handler.scanners[0], hosts_queue, lock, term
+        scanner_handler.scanners[0], hosts_queue, lock, term, sem
     )
 
     assert hosts_queue.qsize() == 1
