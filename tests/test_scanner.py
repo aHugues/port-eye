@@ -6,6 +6,7 @@ import ipaddress
 from port_eye.scanner import Scanner, ScannerHandler
 from port_eye.report import PortReport, HostReport, Report, Vulnerability
 import threading
+import blessings
 
 if sys.version_info[0] == 2:  # pragma: no cover
     from Queue import Queue
@@ -286,8 +287,10 @@ def test_scan_handling():
     ]
     scanner_handler = ScannerHandler(ipv4_hosts, [], [], [], mock=True)
     hosts_queue = Queue()
+    lock = threading.Lock()
+    term = blessings.Terminal()
 
-    scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue)
+    scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue, lock, term, 0)
 
     assert hosts_queue.qsize() == 1
     assert hosts_queue.get().__class__ == HostReport

@@ -36,6 +36,7 @@ setup(
         "click>=7",
         "python-nmap>=0.6",
         "jinja2>=2.10",
+        "blessings>=0.7"
     ],
     extras_require={
         "dev": [
