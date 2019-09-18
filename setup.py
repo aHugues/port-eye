@@ -39,7 +39,7 @@ setup(
         "blessings>=0.7",
         "pyfiglet>=0.8",
     ],
-    extra_requires={
+    extras_require={
         "dev": [
             "pytest"
             "pytest-cov",
