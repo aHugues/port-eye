@@ -324,8 +324,24 @@ class ScannerHandler:
             ]
 
         logging.debug("Created {} scanners".format(len(self.scanners)))
+    
+    def build_detail_result(self, term, report):
+        """Build the logging results for a completed scanner."""
+        base = term.green('[complete]') + '\t-\t' + report.ip
+        line1 = '\t'
+        if report.hostname != "":
+            line1 += "hostname: {}".format(report.hostname)
+        if report.hostname != "" and report.mac != "":
+            line1 += " - "
+        if report.mac != "":
+            line1 += "MAC: {}".format(report.mac)
+        line2 = "\t\t\t\t\t{} ports up: ({})".format(
+                        len(report.ports),
+                        ", ".join([str(port.port_number) for port in report.ports])
+                    )
+        return (base + line1, line2)
 
-    def run_scan(self, scanner, queue, lock, term, offset):
+    def run_scan(self, scanner, queue, lock, term):
         """Run scanning for a scanner and store the result in the queue.
 
         Args:
@@ -333,22 +349,12 @@ class ScannerHandler:
             queue: A Queue in which all results are stored.
             lock: A Lock object to access the terminal.
             term: A Terminal into which displaying the results.
-            offset: An int indicating the row for results.
 
         """
         logging.debug("Starting scan for host {}".format(scanner.host))
 
         lock.acquire()
-        # Move to the correct line
-        up_list = [term.move_up] * (offset + 1)
-        print(" ".join(up_list))
-        
-        # Display status
-        print(term.move_x(0) + term.blue('[Scanning]') + '\t-\t' + scanner.host)
-
-        # Return to original line
-        return_down = [term.move_down] * (offset - 2)
-        print(" ".join(return_down))
+        print(term.blue('[Scanning]') + '\t-\t' + scanner.host)
         lock.release()
 
         # The host does not block ping requests
@@ -356,7 +362,15 @@ class ScannerHandler:
             scanner.perform_scan()
             scanner.find_vulnerabilities()
             report = scanner.extract_host_report()
-            logging.debug("Found result for host {}".format(scanner.host))
+            result = "\t\t{} ports up: ({})".format(
+                len(report.ports),
+                ", ".join([str(port.port_number) for port in report.ports])
+            )
+            (line1, line2) = self.build_detail_result(term, report)
+            lock.acquire()
+            print(line1)
+            print(line2)
+            lock.release()
             queue.put(report)
 
         # The host does block ping requests or is down
@@ -364,9 +378,11 @@ class ScannerHandler:
             # We know the host is down because ping request as privileged user 
             # do not pass
             if scanner.sudo:
-                logging.debug("Host unreachable")
                 report = scanner.extract_host_report(False)
                 queue.put(report)
+                lock.acquire()
+                print(term.red('[Unreachable]') + '\t-\t' + scanner.host)
+                lock.release()
             
             # We are not sure whether the host is down or requests are blocked.
             else:
@@ -374,23 +390,20 @@ class ScannerHandler:
                 scanner.find_vulnerabilities()
                 try:
                     report = scanner.extract_host_report()
-                    logging.debug("Found result for host {}".format(scanner.host))
+                    (line1, line2) = self.build_detail_result(term, report)
+                    lock.acquire()
+                    print(line1)
+                    print(line2)
+                    lock.release()
                 except KeyError:
-                    logging.debug("Host unreachable")
                     report = scanner.extract_host_report(False)
+                    lock.acquire()
+                    print(term.red('[Unreachable]') + '\t-\t' + scanner.host)
+                    lock.release()
                 finally:
                     queue.put(report)
 
-        lock.acquire()
-        # Move to the correct line
-        print(" ".join(up_list))
-        
-        # Display final status
-        print(term.move_x(0) + term.green('[Scan Complete]') + '\t-\t' + scanner.host)
 
-        # Return to original line
-        print(" ".join(return_down))
-        lock.release()
 
     def run_scans(self):
         """Handle the entire scanning process and return the final report."""
@@ -416,34 +429,26 @@ class ScannerHandler:
 
         logging.debug("Starting scans")
 
-        offset = len(self.scanners) + 2
-        if self.scanners[0].sudo:
-            offset += 1
         for scanner in self.scanners:
             worker = threading.Thread(
-                target=self.run_scan, args=(scanner, hosts_queue, lock, self.term, offset),
+                target=self.run_scan, args=(scanner, hosts_queue, lock, self.term),
             )
-            offset -= 1
             threads.append(worker)
             worker.start()
 
         for worker in threads:
             worker.join()
-        
-
-        logging.debug("All scans completed")
-
 
         if sys.version_info[0] == 2:  # pragma: no cover
             duration = time.clock() - start_time
         else:  # pragma: no cover
             duration = time.perf_counter() - start_time
 
+        print("\n\nAll scans completed in {}s".format(int(duration)))
+
         results = []
         while not hosts_queue.empty():
             results.append(hosts_queue.get())
-
-        logging.debug("Generating report.")
 
         final_report = Report(duration, results)
         return final_report

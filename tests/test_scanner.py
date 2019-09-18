@@ -243,7 +243,6 @@ def test_scanning_handling_skip_ping():
     assert result.up == 1
 
 
-
 def test_scanner_handler_creation():
     """Test the creation of a ScannerHandler object."""
     ipv4_hosts = [
@@ -290,7 +289,9 @@ def test_scan_handling():
     lock = threading.Lock()
     term = blessings.Terminal()
 
-    scanner_handler.run_scan(scanner_handler.scanners[0], hosts_queue, lock, term, 0)
+    scanner_handler.run_scan(
+        scanner_handler.scanners[0], hosts_queue, lock, term
+    )
 
     assert hosts_queue.qsize() == 1
     assert hosts_queue.get().__class__ == HostReport
