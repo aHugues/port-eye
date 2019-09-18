@@ -93,9 +93,8 @@ def run_scans(
 
 def display_main_title():
     """Display the application title to the terminal."""
-    fig = Figlet(font='slant')
-    print(fig.renderText('port-eye'))
-
+    fig = Figlet(font="slant")
+    print(fig.renderText("port-eye"))
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -144,6 +143,8 @@ def main(targets, file, output, sudo, log_level, mock):
     """Run the main application from arguments provided in the CLI."""
     display_main_title()
 
+    print("Parsing hosts...")
+
     # Set logging level
     level = getattr(logging, log_level.upper())
     logging.basicConfig(level=level)
@@ -160,15 +161,16 @@ def main(targets, file, output, sudo, log_level, mock):
     parsed_ipv4_networks = hosts_dict["ipv4_networks"]
     parsed_ipv6_networks = hosts_dict["ipv6_networks"]
 
-    if (
-        len(
-            parsed_ipv4
-            + parsed_ipv6
-            + parsed_ipv4_networks
-            + parsed_ipv6_networks
+    total_hosts = len(
+        parsed_ipv4 + parsed_ipv6 + parsed_ipv4_networks + parsed_ipv6_networks
+    )
+
+    if total_hosts > 0:
+        print(
+            "Found {} host{}.".format(
+                total_hosts, "s" if total_hosts > 1 else ""
+            )
         )
-        > 0
-    ):
         run_scans(
             output,
             parsed_ipv4,
