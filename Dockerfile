@@ -2,7 +2,7 @@ FROM python:3.7-alpine
 
 LABEL maintainer="me@aurelienhugues.com"
 LABEL description="Simple CLI port scanner using Python"
-LABEL version="0.2.0"
+LABEL version="0.2.1"
 
 WORKDIR /usr/app
 COPY setup.py README.md MANIFEST.in ./
