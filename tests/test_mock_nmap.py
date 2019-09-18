@@ -91,13 +91,13 @@ def test_build_vuln_result_vulnerable():
 def test_build_result_vulnerable():
     """Test building the result for a vulnerable host."""
     host = u"92.222.10.88"
+    ports = [22, 80, 443]
 
     scanner = MockPortScanner()
-    result = scanner.build_result_vulnerable(host)
+    result = scanner.build_result_vulnerable(host, ports)
 
     scan_result = result["scan"]
 
-    ports = [22, 80, 443]
     for port in ports:
         assert "script" in scan_result[host]["tcp"][port]
 

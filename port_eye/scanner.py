@@ -91,6 +91,7 @@ class Scanner:
         self.vulnerabilities = {}
         self.reachable = False
         self.is_ipv6 = is_ipv6
+        self.sudo = sudo
 
         if type(host) not in [
             ipaddress.IPv4Address,
@@ -100,13 +101,18 @@ class Scanner:
         ]:
             raise TypeError("Invalid type for host")
 
-    def is_reachable(self):
-        """Return True if the host can be reached."""
+    def run_ping_test(self):
+        """Run a simple ping test to check is the host is reachable.
+        
+        Returns:
+            True if the ping test is successful.
+
+        """
         logging.debug("Testing if host {} is reachable...".format(self.host))
         argument = "-sn --host-timeout 10s"
         if self.is_ipv6:
             argument += " -6"
-        self.scanner.scan(self.host, arguments=argument, sudo=True)
+        self.scanner.scan(self.host, arguments=argument, sudo=self.sudo)
         try:
             self.reachable = True
             logging.debug("Test finished for Host {}".format(self.host))
@@ -120,34 +126,29 @@ class Scanner:
         """Return True if the host has a private IP."""
         return self.raw_host.is_private
 
-    def perform_scan(self, sudo=False):
+    def perform_scan(self, skip_ping=False):
         """Perform nmap scanning on selected host.
 
         Args:
-            sudo: A boolean indicating if the scan should be ran as a
-            privileged user. Default to False.
+            skip_ping: A bool indicating if the ping request are to be skipped.
+                This is usually useless when running as privileged user, but
+                can solve hosts inacurrately detected as down when running as
+                unprivileged user. Less information is however gathered.
+        
+        More information can be gathered when scanner is ran as sudo: host
+        detection can only be performed as a privileged user, and some ping
+        requests can be blocked when using as unprivileged user.
 
         """
-        arguments = "-sV"
-        if sudo:
+        arguments = "-Pn --script vuln" if skip_ping else "-sV --script vuln"
+        if self.sudo:
             arguments += " -O"
         if self.is_ipv6:
             arguments += " -6"
-        self.scanner.scan(self.host, arguments=arguments, sudo=sudo)
+        self.scanner.scan(self.host, arguments=arguments, sudo=self.sudo)
 
-    def find_vulnerabilities(self, sudo=False):
-        """Scan the host for potential vulnerabilities.
-
-        Args:
-            sudo: A boolean indicating if the scan should be ran as a
-            privileged user. Default to False.
-
-        """
-        arguments = "--script vuln"
-        if self.is_ipv6:
-            arguments += " -6"
-        arguments += " -O"
-        self.scanner.scan(self.host, arguments=arguments, sudo=True)
+    def find_vulnerabilities(self):
+        """Extract vulnerabilities from scan."""
         try:
             scripts_results = self.scanner[self.host]
             for port in scripts_results["tcp"]:
@@ -226,7 +227,10 @@ class Scanner:
         """
         duration = float(self.scanner.scanstats()["elapsed"])
 
-        if reachable:
+        if (
+            reachable
+            and self.scanner[self.host]["status"]["reason"] != "user-set"
+        ):
             hostname = self.scanner[self.host]["hostnames"][0]["name"]
             mac = ""
             state = "up"
@@ -234,7 +238,10 @@ class Scanner:
             operating_system = ""
             operating_system_accuracy = ""
 
-            if "osmatch" in self.scanner[self.host]:
+            if (
+                "osmatch" in self.scanner[self.host]
+                and len(self.scanner[self.host]["osmatch"]) > 0
+            ):
                 operating_system_dict = self.scanner[self.host]["osmatch"]
                 operating_system = operating_system_dict[0]["name"]
                 operating_system_accuracy = operating_system_dict[0][
@@ -246,6 +253,8 @@ class Scanner:
             mac = ""
             state = "down"
             ports = []
+            operating_system = ""
+            operating_system_accuracy = ""
 
         host_report = HostReport(
             self.host,
@@ -320,28 +329,36 @@ class ScannerHandler:
 
         """
         logging.debug("Starting scan for host {}".format(scanner.host))
-        if scanner.is_reachable():
+
+        # The host does not block ping requests
+        if scanner.run_ping_test():
             scanner.perform_scan()
             scanner.find_vulnerabilities()
-            try:
-                report = scanner.extract_host_report()
-                logging.debug("Found result for host {}".format(scanner.host))
-                queue.put(report)
-            except KeyError:
-                logging.debug(
-                    "No result found for host {}... Trying with -Pn".format(
-                        scanner.host
-                    )
-                )
-                scanner.perform_scan(True)
-                scanner.find_vulnerabilities(True)
-                report = scanner.extract_host_report()
-                logging.debug("Found result for host {}".format(scanner.host))
-                queue.put(report)
-        else:
-            report = scanner.extract_host_report(False)
+            report = scanner.extract_host_report()
+            logging.debug("Found result for host {}".format(scanner.host))
             queue.put(report)
-            logging.debug("Host not reachable")
+
+        # The host does block ping requests or is down
+        else:
+            # We know the host is down because ping request as privileged user 
+            # do not pass
+            if scanner.sudo:
+                logging.debug("Host unreachable")
+                report = scanner.extract_host_report(False)
+                queue.put(report)
+            
+            # We are not sure whether the host is down or requests are blocked.
+            else:
+                scanner.perform_scan(True)
+                scanner.find_vulnerabilities()
+                try:
+                    report = scanner.extract_host_report()
+                    logging.debug("Found result for host {}".format(scanner.host))
+                except KeyError:
+                    logging.debug("Host unreachable")
+                    report = scanner.extract_host_report(False)
+                finally:
+                    queue.put(report)
 
     def run_scans(self):
         """Handle the entire scanning process and return the final report."""
