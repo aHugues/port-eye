@@ -297,6 +297,10 @@ class MockPortScanner:
         if port not in vuln_result:
             return vuln_result[-1]
         return vuln_result[port]
+    
+    def has_mac(self, host):
+        """Return True if the given IP address is associated to a MAC."""
+        return host == '127.0.0.1'
 
     def build_osmatch(self):
         """Return a dict corresponding to the operating system match.
@@ -370,6 +374,9 @@ class MockPortScanner:
             "status": {"state": "up", "reason": "conn-refused"},
             "tcp": tcp_dict,
         }
+
+        if self.has_mac(host):
+            host_dict['addresses']['mac'] = "9C:B6:D0:B7:7B:9F"
 
         if osmatch:
             host_dict["osmatch"] = self.build_osmatch()

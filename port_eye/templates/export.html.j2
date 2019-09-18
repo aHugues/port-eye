@@ -55,7 +55,7 @@
         </table>
     </div>
 
-
+    {% if report.up > 0 %}
     <div>
         <h3 class="category-title">
             Detailed Results
@@ -80,13 +80,30 @@
                         <tr>
                             <td>{{ host.ip }}</td>
                             <td>{{ host.duration }}</td>
+
+                            {% if host.hostname != '' %}
                             <td>{{ host.hostname }}</td>
+                            {% else %}
+                            <td> - </td>
+                            {% endif %}
+
+                            {% if host.mac != '' %}
                             <td>{{ host.mac }}</td>
+                            {% else %}
+                            <td> - </td>
+                            {% endif %}
+
+                            {% if host.operating_system != "" %}
                             <td>{{ host.operating_system }} [Accuracy: {{ host.operating_system_accuracy }}%] </td>
+                            {% else %}
+                            <td> - </td>
+                            {% endif %}
                         </tr>
                     </table>
 
                     <h5>Port Scan results</h5>
+
+                    {% if host.ports|length > 0 %}
                     <table class="host-global-table">
                         <tr>
                             <th>Port</th>
@@ -112,7 +129,14 @@
                         {% endfor %}
                     </table>
 
+                    {% else %}
+                    No open port.
+                    {% endif %}
+
+
                     <h5>Vulnerabilities found</h5>
+
+                    {% if host.ports|length > 0 %}
                     <table class="host-global-table">
                         <tr>
                             <th>Service</th>
@@ -131,6 +155,9 @@
                         {% endfor %}
                         {% endfor %}
                     </table>
+                    {% else %}
+                    No open port.
+                    {% endif %}
                 </div>
             </div>
             {% endif %}
@@ -140,6 +167,7 @@
             
         </div>
     </div>
+    {% endif %}
 
 
 </body>
