@@ -44,7 +44,6 @@ def test_no_input():
     result = runner.invoke(main, ["-o", "tests/file_test.html"])
     assert result.exit_code == 0
     assert (
-        "Run the main application from arguments provided in the CLI."
+        "No input host found, exiting..."
         in result.output
     )
-    assert "--help" in result.output
