@@ -233,7 +233,10 @@ class Scanner:
             and self.scanner[self.host]["status"]["reason"] != "user-set"
         ):
             hostname = self.scanner[self.host]["hostnames"][0]["name"]
-            mac = ""
+            if 'mac' in self.scanner[self.host]['addresses']:
+                mac = self.scanner[self.host]['addresses']['mac']
+            else:
+                mac = ''
             state = "up"
             ports = self.extract_ports("tcp") + self.extract_ports("udp")
             operating_system = ""
